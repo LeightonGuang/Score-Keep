@@ -40,7 +40,35 @@ export const ClassicClock: React.FC = () => {
             )}
 
             {/* Player 1 Rocker */}
-            <div className="relative h-full flex-1">
+            <div className="relative h-full flex-1 overflow-hidden">
+              <div
+                className={`absolute inset-0 transition-all duration-300 ${
+                  activePlayer === 1 ||
+                  (activePlayer === 0 && readyPlayer === 1)
+                    ? "bg-linear-to-r from-zinc-50 to-zinc-400 shadow-xl"
+                    : "bg-linear-to-r from-zinc-400 to-zinc-400 shadow-none"
+                }`}
+                style={{
+                  clipPath:
+                    activePlayer === 1 ||
+                    (activePlayer === 0 && readyPlayer === 1)
+                      ? "polygon(0% 0%, 100% 5%, 100% 100%, 0% 100%)"
+                      : "polygon(0% 5%, 100% 5%, 100% 100%, 0% 100%)",
+                }}
+              >
+                {/* Red Wedge Indicator (Pivoting) */}
+                <div
+                  className={`absolute right-0 bottom-0 left-0 h-6 bg-red-600 transition-all duration-300 ${
+                    activePlayer === 1 ||
+                    (activePlayer === 0 && readyPlayer === 1)
+                      ? "translate-y-0"
+                      : "translate-y-6"
+                  }`}
+                  style={{
+                    clipPath: "polygon(0% 0%, 100% 100%, 0% 100%)",
+                  }}
+                />
+              </div>
               <button
                 onTouchStart={(e) => handleTouchStart(e, 1)}
                 onMouseDown={(e) => handleMouseDown(e, 1)}
@@ -50,12 +78,40 @@ export const ClassicClock: React.FC = () => {
                     ? readyPlayer !== 1
                     : activePlayer !== 1)
                 }
-                className={`h-full w-full shadow-2xl transition-all duration-200 ${activePlayer === 1 || (activePlayer === 0 && readyPlayer === 1) ? "h-full translate-y-0 border-b-8 border-red-600 bg-linear-to-r from-zinc-50 to-zinc-300 shadow-xl" : "h-[75%] translate-y-2 bg-linear-to-r from-zinc-400 to-zinc-400 shadow-none"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 1 ? "animate-pulse" : ""} ${isGameOver && time1 === 0 ? "border-red-500 bg-red-600" : ""} ${isGameOver || (activePlayer !== 1 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"} `}
+                className={`absolute inset-0 z-10 h-full w-full ${isGameOver || (activePlayer !== 1 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"}`}
               />
             </div>
 
             {/* Player 2 Rocker */}
-            <div className="relative h-full flex-1">
+            <div className="relative h-full flex-1 overflow-hidden">
+              <div
+                className={`absolute inset-0 transition-all duration-300 ${
+                  activePlayer === 2 ||
+                  (activePlayer === 0 && readyPlayer === 2)
+                    ? "bg-linear-to-l from-zinc-50 to-zinc-400 shadow-xl"
+                    : "bg-linear-to-l from-zinc-400 to-zinc-400 shadow-none"
+                }`}
+                style={{
+                  clipPath:
+                    activePlayer === 2 ||
+                    (activePlayer === 0 && readyPlayer === 2)
+                      ? "polygon(0% 5%, 100% 0%, 100% 100%, 0% 100%)"
+                      : "polygon(0% 5%, 100% 5%, 100% 100%, 0% 100%)",
+                }}
+              >
+                {/* Red Wedge Indicator (Pivoting) */}
+                <div
+                  className={`absolute right-0 bottom-0 left-0 h-6 bg-red-600 transition-all duration-300 ${
+                    activePlayer === 2 ||
+                    (activePlayer === 0 && readyPlayer === 2)
+                      ? "translate-y-0"
+                      : "translate-y-6"
+                  }`}
+                  style={{
+                    clipPath: "polygon(0% 100%, 100% 0%, 100% 100%)",
+                  }}
+                />
+              </div>
               <button
                 onTouchStart={(e) => handleTouchStart(e, 2)}
                 onMouseDown={(e) => handleMouseDown(e, 2)}
@@ -65,7 +121,7 @@ export const ClassicClock: React.FC = () => {
                     ? readyPlayer !== 2
                     : activePlayer !== 2)
                 }
-                className={`h-full w-full shadow-2xl transition-all duration-200 ${activePlayer === 2 || (activePlayer === 0 && readyPlayer === 2) ? "h-full translate-y-0 border-b-8 border-red-600 bg-linear-to-l from-zinc-50 to-zinc-300 shadow-xl" : "h-[75%] translate-y-2 bg-linear-to-l from-zinc-400 to-zinc-400 shadow-none"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 2 ? "animate-pulse" : ""} ${isGameOver && time2 === 0 ? "border-red-500 bg-red-600" : ""} ${isGameOver || (activePlayer !== 2 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"} `}
+                className={`absolute inset-0 z-10 h-full w-full ${isGameOver || (activePlayer !== 2 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"}`}
               />
             </div>
           </div>
