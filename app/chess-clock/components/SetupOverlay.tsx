@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 type ClockStyle = "modern" | "classic";
 
 interface SetupOverlayProps {
@@ -89,10 +91,33 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-sm sm:p-6 landscape:p-2">
-      <div className="animate-in fade-in zoom-in scrollbar-hide flex max-h-full w-full max-w-sm flex-col gap-6 overflow-y-auto px-4 py-4 duration-300 landscape:max-h-screen landscape:gap-2 landscape:py-2">
-        <h1 className="text-center text-3xl font-black tracking-tight landscape:hidden">
-          CHESS CLOCK
-        </h1>
+      <div className="animate-in fade-in zoom-in scrollbar-hide relative flex max-h-full w-full max-w-sm flex-col gap-6 overflow-y-auto px-4 py-4 duration-300 landscape:max-h-screen landscape:gap-2 landscape:py-2">
+        {/* Header Row */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-500 transition-all hover:bg-zinc-800 hover:text-white active:scale-90"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </Link>
+
+          <h1 className="flex-1 text-center text-3xl font-black tracking-tight landscape:hidden">
+            CHESS CLOCK
+          </h1>
+
+          <div className="w-10 shrink-0 landscape:hidden" />
+        </div>
 
         <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 landscape:gap-2">
           <input
