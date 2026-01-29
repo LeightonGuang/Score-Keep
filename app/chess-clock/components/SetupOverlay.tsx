@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 type ClockStyle = "modern" | "classic";
 
@@ -8,10 +7,26 @@ interface SetupOverlayProps {
   setP1Name: (name: string) => void;
   p2Name: string;
   setP2Name: (name: string) => void;
+  baseHoursInput: string;
+  setBaseHoursInput: (h: string) => void;
   baseMinutesInput: string;
-  setBaseMinutesInput: (min: string) => void;
+  setBaseMinutesInput: (m: string) => void;
+  baseSecondsInput: string;
+  setBaseSecondsInput: (s: string) => void;
   incrementSecondsInput: string;
   setIncrementSecondsInput: (inc: string) => void;
+  p2HoursInput: string;
+  setP2HoursInput: (h: string) => void;
+  p2MinutesInput: string;
+  setP2MinutesInput: (m: string) => void;
+  p2SecondsInput: string;
+  setP2SecondsInput: (s: string) => void;
+  p2IncrementSecondsInput: string;
+  setP2IncrementSecondsInput: (inc: string) => void;
+  isMirrored: boolean;
+  setIsMirrored: (mirrored: boolean) => void;
+  selectedPreset: string | null;
+  setSelectedPreset: (preset: string | null) => void;
   clockStyle: ClockStyle;
   setClockStyle: (style: ClockStyle) => void;
   errors: { base?: string; inc?: string };
@@ -19,117 +34,285 @@ interface SetupOverlayProps {
   onStart: () => void;
 }
 
+const PRESETS = [
+  { label: "1+0", h: "0", m: "1", s: "0", inc: "0" },
+  { label: "3+0", h: "0", m: "3", s: "0", inc: "0" },
+  { label: "3+2", h: "0", m: "3", s: "0", inc: "2" },
+  { label: "5+0", h: "0", m: "5", s: "0", inc: "0" },
+  { label: "5+3", h: "0", m: "5", s: "0", inc: "3" },
+  { label: "10+0", h: "0", m: "10", s: "0", inc: "0" },
+  { label: "10+5", h: "0", m: "10", s: "0", inc: "5" },
+  { label: "15+10", h: "0", m: "15", s: "0", inc: "10" },
+  { label: "30+0", h: "0", m: "30", s: "0", inc: "0" },
+];
+
 export const SetupOverlay: React.FC<SetupOverlayProps> = ({
   p1Name,
   setP1Name,
   p2Name,
   setP2Name,
+  baseHoursInput,
+  setBaseHoursInput,
   baseMinutesInput,
   setBaseMinutesInput,
+  baseSecondsInput,
+  setBaseSecondsInput,
   incrementSecondsInput,
   setIncrementSecondsInput,
+  p2HoursInput,
+  setP2HoursInput,
+  p2MinutesInput,
+  setP2MinutesInput,
+  p2SecondsInput,
+  setP2SecondsInput,
+  p2IncrementSecondsInput,
+  setP2IncrementSecondsInput,
+  isMirrored,
+  setIsMirrored,
+  selectedPreset,
+  setSelectedPreset,
   clockStyle,
   setClockStyle,
   errors,
   setErrors,
   onStart,
 }) => {
+  const handlePresetSelect = (p: (typeof PRESETS)[0]) => {
+    setSelectedPreset(p.label);
+    setBaseHoursInput(p.h);
+    setBaseMinutesInput(p.m);
+    setBaseSecondsInput(p.s);
+    setIncrementSecondsInput(p.inc);
+    setIsMirrored(true); // Presets are always mirrored
+    setErrors({});
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 p-6 backdrop-blur-sm">
-      <div className="animate-in fade-in zoom-in flex w-full max-w-sm flex-col gap-6 duration-300">
-        <h1 className="text-center text-3xl font-black tracking-tight">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 p-4 backdrop-blur-sm sm:p-6 landscape:p-2">
+      <div className="animate-in fade-in zoom-in scrollbar-hide flex max-h-full w-full max-w-sm flex-col gap-6 overflow-y-auto px-1 py-4 duration-300 landscape:max-h-screen landscape:gap-2 landscape:py-2">
+        <h1 className="text-center text-3xl font-black tracking-tight landscape:hidden">
           CHESS CLOCK
         </h1>
 
-        {/* Style Selector */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setClockStyle("modern")}
-            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all ${clockStyle === "modern" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
-          >
-            <div className="flex h-12 w-full flex-col gap-1">
-              <div className="flex-1 rounded-sm bg-white/20" />
-              <div className="flex-1 rounded-sm bg-white/20" />
-            </div>
-            <span className="text-[10px] font-bold tracking-widest uppercase">
-              Modern
-            </span>
-          </button>
-          <button
-            onClick={() => setClockStyle("classic")}
-            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all ${clockStyle === "classic" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
-          >
-            <div className="flex h-12 w-full items-end gap-1">
-              <div className="h-[80%] flex-1 rounded-t-sm bg-white/20" />
-              <div className="h-[40%] flex-1 rounded-t-sm bg-white/20" />
-            </div>
-            <span className="text-[10px] font-bold tracking-widest uppercase">
-              Classic
-            </span>
-          </button>
-        </div>
-
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 landscape:gap-2">
           <input
             type="text"
             placeholder="Player 1"
             value={p1Name}
             onChange={(e) => setP1Name(e.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none"
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none landscape:py-2 landscape:text-sm"
           />
           <input
             type="text"
             placeholder="Player 2"
             value={p2Name}
             onChange={(e) => setP2Name(e.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none"
+            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none landscape:py-2 landscape:text-sm"
           />
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="ml-1 text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
-                Minutes
-              </label>
-              <input
-                type="number"
-                value={baseMinutesInput}
-                onChange={(e) => {
-                  setBaseMinutesInput(e.target.value);
-                  if (errors.base) setErrors({ ...errors, base: undefined });
-                }}
-                className={`w-full rounded-xl border bg-zinc-900 px-4 py-3 transition-colors focus:outline-none ${errors.base ? "border-red-500" : "border-zinc-800 focus:border-white"}`}
-              />
-              {errors.base && (
-                <span className="ml-1 text-[10px] font-medium text-red-500">
-                  {errors.base}
-                </span>
-              )}
+        {/* Style Selector */}
+        <div className="grid grid-cols-2 gap-3 landscape:gap-2">
+          <button
+            onClick={() => setClockStyle("classic")}
+            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "classic" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
+          >
+            <div className="flex h-12 w-full items-end gap-1 landscape:h-6 landscape:w-12">
+              <div className="h-[80%] flex-1 rounded-t-sm bg-white/20" />
+              <div className="h-[40%] flex-1 rounded-t-sm bg-white/20" />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="ml-1 text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
-                Incr (s)
-              </label>
-              <input
-                type="number"
-                value={incrementSecondsInput}
-                onChange={(e) => {
-                  setIncrementSecondsInput(e.target.value);
-                  if (errors.inc) setErrors({ ...errors, inc: undefined });
-                }}
-                className={`w-full rounded-xl border bg-zinc-900 px-4 py-3 transition-colors focus:outline-none ${errors.inc ? "border-red-500" : "border-zinc-800 focus:border-white"}`}
-              />
-              {errors.inc && (
-                <span className="ml-1 text-[10px] font-medium text-red-500">
-                  {errors.inc}
-                </span>
-              )}
+            <span className="text-[10px] font-bold tracking-widest uppercase landscape:text-[8px]">
+              Classic
+            </span>
+          </button>
+
+          <button
+            onClick={() => setClockStyle("modern")}
+            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "modern" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
+          >
+            <div className="flex h-12 w-full flex-col gap-1 landscape:h-6 landscape:w-12">
+              <div className="flex-1 rounded-sm bg-white/20" />
+              <div className="flex-1 rounded-sm bg-white/20" />
+            </div>
+            <span className="text-[10px] font-bold tracking-widest uppercase landscape:text-[8px]">
+              Modern
+            </span>
+          </button>
+        </div>
+
+        {/* Presets Dropdown */}
+        <div className="space-y-2">
+          <label className="ml-1 text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+            Time Control
+          </label>
+          <div className="relative">
+            <select
+              value={selectedPreset || "custom"}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "custom") {
+                  setSelectedPreset(null);
+                } else {
+                  const p = PRESETS.find((x) => x.label === val);
+                  if (p) handlePresetSelect(p);
+                }
+              }}
+              className="w-full appearance-none rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-bold text-white transition-all focus:border-white focus:outline-none landscape:py-2"
+            >
+              {PRESETS.map((p) => (
+                <option key={p.label} value={p.label}>
+                  {p.label}
+                </option>
+              ))}
+              <option value="custom">Custom</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </div>
           </div>
         </div>
 
+        {/* Custom Inputs */}
+        {selectedPreset === null && (
+          <div className="animate-in fade-in slide-in-from-top-2 space-y-4 duration-300 landscape:space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+                Mirror Timer
+              </label>
+              <button
+                onClick={() => setIsMirrored(!isMirrored)}
+                className={`relative h-6 w-11 rounded-full transition-colors duration-200 outline-none ${isMirrored ? "bg-white" : "bg-zinc-800"}`}
+              >
+                <div
+                  className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-zinc-950 transition-transform duration-200 ${isMirrored ? "translate-x-5 shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "translate-x-0"}`}
+                />
+              </button>
+            </div>
+
+            <div className="space-y-4 landscape:space-y-2">
+              {/* Player 1 Section */}
+              <div className="space-y-2 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-3">
+                <div className="text-[8px] font-black tracking-widest text-zinc-600 uppercase">
+                  {isMirrored ? "Both Players" : p1Name || "Player 1"}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="number"
+                      placeholder="H"
+                      value={baseHoursInput}
+                      onChange={(e) => setBaseHoursInput(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="number"
+                      placeholder="M"
+                      value={baseMinutesInput}
+                      onChange={(e) => setBaseMinutesInput(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="number"
+                      placeholder="S"
+                      value={baseSecondsInput}
+                      onChange={(e) => setBaseSecondsInput(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 px-1 py-1">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                    Incr
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="Secs"
+                    value={incrementSecondsInput}
+                    onChange={(e) => setIncrementSecondsInput(e.target.value)}
+                    className="w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Player 2 Section (if not mirrored) */}
+              {!isMirrored && (
+                <div className="animate-in fade-in slide-in-from-top-2 space-y-2 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-3 duration-300">
+                  <div className="text-[8px] font-black tracking-widest text-zinc-600 uppercase">
+                    {p2Name || "Player 2"}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="number"
+                        placeholder="H"
+                        value={p2HoursInput}
+                        onChange={(e) => setP2HoursInput(e.target.value)}
+                        className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="number"
+                        placeholder="M"
+                        value={p2MinutesInput}
+                        onChange={(e) => setP2MinutesInput(e.target.value)}
+                        className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="number"
+                        placeholder="S"
+                        value={p2SecondsInput}
+                        onChange={(e) => setP2SecondsInput(e.target.value)}
+                        className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 px-1 py-1">
+                    <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                      Incr
+                    </span>
+                    <input
+                      type="number"
+                      placeholder="Secs"
+                      value={p2IncrementSecondsInput}
+                      onChange={(e) =>
+                        setP2IncrementSecondsInput(e.target.value)
+                      }
+                      className="w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {errors.base && (
+              <span className="block text-center text-[10px] font-medium text-red-500">
+                {errors.base}
+              </span>
+            )}
+          </div>
+        )}
+
         <button
           onClick={onStart}
-          className="mt-2 w-full rounded-2xl bg-white py-4 font-black tracking-widest text-zinc-950 uppercase transition-all active:scale-[0.98]"
+          className="mt-2 w-full shrink-0 rounded-2xl bg-white py-4 font-black tracking-widest text-zinc-950 uppercase transition-all active:scale-[0.98] landscape:mt-0 landscape:py-2"
         >
           Start Game
         </button>
