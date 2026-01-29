@@ -109,9 +109,24 @@ export const SetupOverlay: React.FC = () => {
             onClick={() => setClockStyle("classic")}
             className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "classic" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
           >
-            <div className="flex h-12 w-full items-end gap-1 landscape:h-6 landscape:w-12">
-              <div className="h-[80%] flex-1 rounded-t-sm bg-white/20" />
-              <div className="h-[40%] flex-1 rounded-t-sm bg-white/20" />
+            <div className="flex h-12 w-full items-end gap-0.5 landscape:h-6 landscape:w-12">
+              <div
+                className="relative h-full flex-1 bg-white/30"
+                style={{
+                  clipPath: "polygon(0% 10%, 100% 30%, 100% 100%, 0% 100%)",
+                }}
+              >
+                <div
+                  className="absolute bottom-0 left-0 h-[30%] w-full bg-red-500/50"
+                  style={{ clipPath: "polygon(0% 0%, 100% 100%, 0% 100%)" }}
+                />
+              </div>
+              <div
+                className="h-full flex-1 bg-white/10"
+                style={{
+                  clipPath: "polygon(0% 30%, 100% 30%, 100% 100%, 0% 100%)",
+                }}
+              />
             </div>
             <span className="text-[10px] font-bold tracking-widest uppercase landscape:text-[8px]">
               Classic
@@ -122,9 +137,10 @@ export const SetupOverlay: React.FC = () => {
             onClick={() => setClockStyle("modern")}
             className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "modern" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
           >
-            <div className="flex h-12 w-full flex-col gap-1 landscape:h-6 landscape:w-12">
-              <div className="flex-1 rounded-sm bg-white/20" />
-              <div className="flex-1 rounded-sm bg-white/20" />
+            <div className="flex h-12 w-full flex-row gap-0.5 overflow-hidden rounded-sm border border-white/5 landscape:h-6 landscape:w-12">
+              <div className="flex-1 bg-white/40" />
+              <div className="w-1.5 bg-white/10" />
+              <div className="flex-1 bg-white/5" />
             </div>
             <span className="text-[10px] font-bold tracking-widest uppercase landscape:text-[8px]">
               Modern
