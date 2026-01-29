@@ -15,10 +15,6 @@ const PRESETS = [
 
 export const SetupOverlay: React.FC = () => {
   const {
-    p1Name,
-    setP1Name,
-    p2Name,
-    setP2Name,
     baseHoursInput,
     setBaseHoursInput,
     baseMinutesInput,
@@ -84,23 +80,6 @@ export const SetupOverlay: React.FC = () => {
           </h1>
 
           <div className="w-10 shrink-0 landscape:hidden" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 landscape:grid-cols-2 landscape:gap-2">
-          <input
-            type="text"
-            placeholder="Player 1"
-            value={p1Name}
-            onChange={(e) => setP1Name(e.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none landscape:py-2 landscape:text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Player 2"
-            value={p2Name}
-            onChange={(e) => setP2Name(e.target.value)}
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 transition-colors focus:border-white focus:outline-none landscape:py-2 landscape:text-sm"
-          />
         </div>
 
         {/* Style Selector */}
@@ -212,7 +191,7 @@ export const SetupOverlay: React.FC = () => {
               {/* Player 1 Section */}
               <div className="space-y-2 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-3">
                 <div className="text-[8px] font-black tracking-widest text-zinc-600 uppercase">
-                  {isMirrored ? "Both Players" : p1Name || "Player 1"}
+                  {isMirrored ? "Both Players" : "Player 1"}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="flex flex-col gap-1">
@@ -261,7 +240,7 @@ export const SetupOverlay: React.FC = () => {
               {!isMirrored && (
                 <div className="animate-in fade-in slide-in-from-top-2 space-y-2 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-3 duration-300">
                   <div className="text-[8px] font-black tracking-widest text-zinc-600 uppercase">
-                    {p2Name || "Player 2"}
+                    Player 2
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">

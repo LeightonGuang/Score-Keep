@@ -4,8 +4,6 @@ export const ModernClock: React.FC = () => {
   const {
     time1,
     time2,
-    p1Name,
-    p2Name,
     activePlayer,
     readyPlayer,
     hasPrimed,
@@ -34,9 +32,6 @@ export const ModernClock: React.FC = () => {
         >
           <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[20vh]">
             {formatTime(time1)}
-          </span>
-          <span className="mt-4 text-sm font-medium tracking-[0.2em] uppercase opacity-50">
-            {p1Name || "Player 1"}
           </span>
         </button>
 
@@ -77,9 +72,6 @@ export const ModernClock: React.FC = () => {
         >
           <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[20vh]">
             {formatTime(time2)}
-          </span>
-          <span className="mt-4 text-sm font-medium tracking-[0.2em] uppercase opacity-50">
-            {p2Name || "Player 2"}
           </span>
         </button>
       </div>

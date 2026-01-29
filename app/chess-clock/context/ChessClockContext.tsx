@@ -11,10 +11,6 @@ type ClockStyle = "modern" | "classic";
 
 interface ChessClockContextType {
   // Setup State
-  p1Name: string;
-  setP1Name: (name: string) => void;
-  p2Name: string;
-  setP2Name: (name: string) => void;
   baseHoursInput: string;
   setBaseHoursInput: (h: string) => void;
   baseMinutesInput: string;
@@ -66,8 +62,6 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // Setup State
-  const [p1Name, setP1Name] = useState("");
-  const [p2Name, setP2Name] = useState("");
   const [baseHoursInput, setBaseHoursInput] = useState("0");
   const [baseMinutesInput, setBaseMinutesInput] = useState("3");
   const [baseSecondsInput, setBaseSecondsInput] = useState("0");
@@ -315,10 +309,6 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ChessClockContext.Provider
       value={{
-        p1Name,
-        setP1Name,
-        p2Name,
-        setP2Name,
         baseHoursInput,
         setBaseHoursInput,
         baseMinutesInput,

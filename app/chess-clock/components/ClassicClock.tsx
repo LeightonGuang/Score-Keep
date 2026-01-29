@@ -5,8 +5,6 @@ export const ClassicClock: React.FC = () => {
   const {
     time1,
     time2,
-    p1Name,
-    p2Name,
     activePlayer,
     readyPlayer,
     hasPrimed,
@@ -143,9 +141,6 @@ export const ClassicClock: React.FC = () => {
                 >
                   {formatTime(time1)}
                 </span>
-                <span className="mt-1 text-[8px] leading-none font-black tracking-widest uppercase opacity-40">
-                  {p1Name || "Player 1"}
-                </span>
 
                 {/* Active Indicator */}
                 {activePlayer === 1 && (
@@ -173,9 +168,6 @@ export const ClassicClock: React.FC = () => {
                   className={`relative z-10 font-mono text-5xl font-bold tracking-tight tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isGameOver && time2 === 0 ? "animate-pulse text-red-900" : ""}`}
                 >
                   {formatTime(time2)}
-                </span>
-                <span className="mt-1 text-[8px] leading-none font-black tracking-widest uppercase opacity-40">
-                  {p2Name || "Player 2"}
                 </span>
 
                 {/* Active Indicator */}
