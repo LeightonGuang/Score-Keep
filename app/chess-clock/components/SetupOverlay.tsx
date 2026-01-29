@@ -86,7 +86,7 @@ export const SetupOverlay: React.FC = () => {
         <div className="grid grid-cols-2 gap-3 landscape:gap-2">
           <button
             onClick={() => setClockStyle("classic")}
-            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "classic" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
+            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all hover:cursor-pointer landscape:flex-row landscape:p-2 ${clockStyle === "classic" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
           >
             <div className="flex h-12 w-full items-end gap-0.5 landscape:h-6 landscape:w-12">
               <div
@@ -114,7 +114,7 @@ export const SetupOverlay: React.FC = () => {
 
           <button
             onClick={() => setClockStyle("modern")}
-            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all landscape:flex-row landscape:p-2 ${clockStyle === "modern" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
+            className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all hover:cursor-pointer landscape:flex-row landscape:p-2 ${clockStyle === "modern" ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900/50 opacity-40 hover:opacity-100"} `}
           >
             <div className="flex h-12 w-full flex-row gap-0.5 overflow-hidden rounded-sm border border-white/5 landscape:h-6 landscape:w-12">
               <div className="flex-1 bg-white/40" />
@@ -144,7 +144,7 @@ export const SetupOverlay: React.FC = () => {
                   if (p) handlePresetSelect(p);
                 }
               }}
-              className="w-full appearance-none rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-bold text-white transition-all focus:border-white focus:outline-none landscape:py-2"
+              className="w-full appearance-none rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-bold text-white transition-all hover:cursor-pointer focus:border-white focus:outline-none landscape:py-2"
             >
               {PRESETS.map((p) => (
                 <option key={p.label} value={p.label}>
@@ -299,7 +299,7 @@ export const SetupOverlay: React.FC = () => {
 
         <button
           onClick={onStart}
-          className="mt-2 w-full shrink-0 rounded-2xl bg-white py-4 font-black tracking-widest text-zinc-950 uppercase transition-all active:scale-[0.98] landscape:mt-0 landscape:py-2"
+          className="mt-2 w-full shrink-0 rounded-2xl bg-white py-4 font-black tracking-widest text-zinc-950 uppercase transition-all hover:cursor-pointer active:scale-[0.98] landscape:mt-0 landscape:py-2"
         >
           Start Game
         </button>

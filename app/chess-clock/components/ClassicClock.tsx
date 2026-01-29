@@ -40,7 +40,7 @@ export const ClassicClock: React.FC = () => {
             {/* Player 1 Rocker */}
             <div className="relative h-full flex-1 overflow-hidden">
               <div
-                className={`absolute inset-0 transition-all duration-300 ${
+                className={`pointer-events-none absolute inset-0 transition-all duration-200 ${
                   activePlayer === 1 ||
                   (activePlayer === 0 && readyPlayer === 1)
                     ? "bg-linear-to-r from-zinc-50 to-zinc-400 shadow-xl"
@@ -56,7 +56,7 @@ export const ClassicClock: React.FC = () => {
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-300 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-200 ${
                     activePlayer === 1 ||
                     (activePlayer === 0 && readyPlayer === 1)
                       ? "translate-y-0"
@@ -72,18 +72,25 @@ export const ClassicClock: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, 1)}
                 disabled={
                   isGameOver ||
-                  (activePlayer === 0 && hasPrimed
-                    ? readyPlayer !== 1
-                    : activePlayer !== 1)
+                  (activePlayer !== 0
+                    ? activePlayer !== 1
+                    : hasPrimed && readyPlayer !== 1)
                 }
-                className={`absolute inset-0 z-10 h-full w-full ${isGameOver || (activePlayer !== 1 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"}`}
+                className={`absolute inset-0 z-10 h-full w-full ${
+                  isGameOver ||
+                  (activePlayer !== 0
+                    ? activePlayer !== 1
+                    : hasPrimed && readyPlayer !== 1)
+                    ? "pointer-events-none"
+                    : "cursor-pointer"
+                }`}
               />
             </div>
 
             {/* Player 2 Rocker */}
             <div className="relative h-full flex-1 overflow-hidden">
               <div
-                className={`absolute inset-0 transition-all duration-300 ${
+                className={`pointer-events-none absolute inset-0 transition-all duration-200 ${
                   activePlayer === 2 ||
                   (activePlayer === 0 && readyPlayer === 2)
                     ? "bg-linear-to-l from-zinc-50 to-zinc-400 shadow-xl"
@@ -99,7 +106,7 @@ export const ClassicClock: React.FC = () => {
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-300 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-200 ${
                     activePlayer === 2 ||
                     (activePlayer === 0 && readyPlayer === 2)
                       ? "translate-y-0"
@@ -115,11 +122,18 @@ export const ClassicClock: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, 2)}
                 disabled={
                   isGameOver ||
-                  (activePlayer === 0 && hasPrimed
-                    ? readyPlayer !== 2
-                    : activePlayer !== 2)
+                  (activePlayer !== 0
+                    ? activePlayer !== 2
+                    : hasPrimed && readyPlayer !== 2)
                 }
-                className={`absolute inset-0 z-10 h-full w-full ${isGameOver || (activePlayer !== 2 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"}`}
+                className={`absolute inset-0 z-10 h-full w-full ${
+                  isGameOver ||
+                  (activePlayer !== 0
+                    ? activePlayer !== 2
+                    : hasPrimed && readyPlayer !== 2)
+                    ? "pointer-events-none"
+                    : "cursor-pointer"
+                }`}
               />
             </div>
           </div>
@@ -188,7 +202,7 @@ export const ClassicClock: React.FC = () => {
         <div className="flex h-max shrink-0 items-center justify-between px-8 py-2">
           <button
             onClick={onReset}
-            className="group flex h-full flex-col items-center gap-1 transition-all active:scale-95"
+            className="group flex h-full flex-col items-center gap-1 transition-all hover:cursor-pointer active:scale-95"
           >
             <div className="flex items-center justify-center rounded-md bg-zinc-800/80 p-1 shadow-sm transition-all group-active:bg-zinc-700 hover:bg-zinc-700">
               <svg
@@ -213,14 +227,14 @@ export const ClassicClock: React.FC = () => {
 
           <button
             onClick={onPause}
-            className={`flex items-center justify-center rounded-lg border-4 border-zinc-800 px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
+            className={`flex items-center justify-center rounded-lg border-4 border-zinc-800 px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all hover:cursor-pointer active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
           >
             {activePlayer === 0 && !isGameOver ? "Start" : "Pause"}
           </button>
 
           <button
             onClick={() => setIsFlipped(!isFlipped)}
-            className="group flex flex-col items-center gap-1 transition-all active:scale-95"
+            className="group flex flex-col items-center gap-1 transition-all hover:cursor-pointer active:scale-95"
           >
             <div className="flex items-center justify-center rounded-md bg-zinc-800/80 p-1 shadow-sm transition-all group-active:bg-zinc-700 hover:bg-zinc-700">
               <svg
