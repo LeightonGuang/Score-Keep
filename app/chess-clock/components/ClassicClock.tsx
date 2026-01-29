@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useChessClock } from "../context/ChessClockContext";
+import LcdTimer from "./LcdTimer";
 
 export const ClassicClock: React.FC = () => {
   const {
@@ -56,7 +57,7 @@ export const ClassicClock: React.FC = () => {
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-200 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-500/80 transition-all duration-200 ${
                     activePlayer === 1 ||
                     (activePlayer === 0 && readyPlayer === 1)
                       ? "translate-y-0"
@@ -106,7 +107,7 @@ export const ClassicClock: React.FC = () => {
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-200 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-500/80 transition-all duration-200 ${
                     activePlayer === 2 ||
                     (activePlayer === 0 && readyPlayer === 2)
                       ? "translate-y-0"
@@ -141,60 +142,10 @@ export const ClassicClock: React.FC = () => {
           {/* LCD Displays */}
           <div className="mt-auto flex w-full flex-row">
             {/* LCD 1 */}
-            <div
-              className={`relative flex flex-1 flex-col items-stretch justify-center rounded-2xl transition-all duration-300`}
-            >
-              <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[#a3b18a] py-4 text-[#1a1c1e] shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] landscape:py-1">
-                {/* Background "Unlit" segments mask */}
-                <div className="pointer-events-none absolute text-5xl font-bold tracking-tight tabular-nums opacity-[0.03] contrast-150 select-none sm:text-7xl">
-                  <span className="font-mono">8:88:88.88</span>
-                </div>
-
-                <span
-                  className={`relative z-10 font-mono text-5xl font-bold tracking-tight tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isGameOver && time1 === 0 ? "animate-pulse text-red-900" : ""}`}
-                >
-                  {formatTime(time1)}
-                </span>
-
-                {/* Active Indicator */}
-                {activePlayer === 1 && (
-                  <div className="absolute top-3 right-3 h-2 w-2 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-                )}
-                {isGameOver && time1 === 0 && (
-                  <div className="absolute top-3 left-3 text-[8px] font-bold text-red-900">
-                    FLAG
-                  </div>
-                )}
-              </div>
-            </div>
+            <LcdTimer time={time1} isActive={activePlayer === 1} />
 
             {/* LCD 2 */}
-            <div
-              className={`relative flex flex-1 flex-col items-stretch justify-center rounded-2xl transition-all duration-300`}
-            >
-              <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[#a3b18a] py-4 text-[#1a1c1e] shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] landscape:py-1">
-                {/* Background "Unlit" segments mask */}
-                <div className="pointer-events-none absolute text-5xl font-bold tracking-tight tabular-nums opacity-[0.03] contrast-150 select-none sm:text-7xl">
-                  <span className="font-mono">8:88:88.88</span>
-                </div>
-
-                <span
-                  className={`relative z-10 font-mono text-5xl font-bold tracking-tight tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isGameOver && time2 === 0 ? "animate-pulse text-red-900" : ""}`}
-                >
-                  {formatTime(time2)}
-                </span>
-
-                {/* Active Indicator */}
-                {activePlayer === 2 && (
-                  <div className="absolute top-3 right-3 h-2 w-2 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-                )}
-                {isGameOver && time2 === 0 && (
-                  <div className="absolute top-3 left-3 text-[8px] font-bold text-red-900">
-                    FLAG
-                  </div>
-                )}
-              </div>
-            </div>
+            <LcdTimer time={time2} isActive={activePlayer === 2} />
           </div>
         </div>
 
