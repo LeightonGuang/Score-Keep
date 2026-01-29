@@ -59,7 +59,10 @@ export const ClassicClock: React.FC<ClassicClockProps> = ({
                 onTouchStart={(e) => handleTouchStart(e, 1)}
                 onMouseDown={(e) => handleMouseDown(e, 1)}
                 disabled={
-                  isGameOver || (activePlayer !== 1 && activePlayer !== 0)
+                  isGameOver ||
+                  (activePlayer === 0 && hasPrimed
+                    ? readyPlayer !== 1
+                    : activePlayer !== 1)
                 }
                 className={`h-full w-full shadow-2xl transition-all duration-200 ${activePlayer === 1 || (activePlayer === 0 && readyPlayer === 1) ? "h-full translate-y-0 border-b-8 border-red-600 bg-linear-to-r from-zinc-50 to-zinc-300 shadow-xl" : "h-[75%] translate-y-2 bg-linear-to-r from-zinc-400 to-zinc-400 shadow-none"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 1 ? "animate-pulse" : ""} ${isGameOver && time1 === 0 ? "border-red-500 bg-red-600" : ""} ${isGameOver || (activePlayer !== 1 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"} `}
               />
@@ -71,7 +74,10 @@ export const ClassicClock: React.FC<ClassicClockProps> = ({
                 onTouchStart={(e) => handleTouchStart(e, 2)}
                 onMouseDown={(e) => handleMouseDown(e, 2)}
                 disabled={
-                  isGameOver || (activePlayer !== 2 && activePlayer !== 0)
+                  isGameOver ||
+                  (activePlayer === 0 && hasPrimed
+                    ? readyPlayer !== 2
+                    : activePlayer !== 2)
                 }
                 className={`h-full w-full shadow-2xl transition-all duration-200 ${activePlayer === 2 || (activePlayer === 0 && readyPlayer === 2) ? "h-full translate-y-0 border-b-8 border-red-600 bg-linear-to-l from-zinc-50 to-zinc-300 shadow-xl" : "h-[75%] translate-y-2 bg-linear-to-l from-zinc-400 to-zinc-400 shadow-none"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 2 ? "animate-pulse" : ""} ${isGameOver && time2 === 0 ? "border-red-500 bg-red-600" : ""} ${isGameOver || (activePlayer !== 2 && activePlayer !== 0) ? "pointer-events-none" : "cursor-pointer"} `}
               />
@@ -173,7 +179,7 @@ export const ClassicClock: React.FC<ClassicClockProps> = ({
 
           <button
             onClick={onPause}
-            className={`flex items-center justify-center rounded-lg border-4 border-zinc-800 px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all active:scale-95 ${activePlayer === 0 && !hasPrimed ? "pointer-events-none opacity-30 grayscale" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
+            className={`flex items-center justify-center rounded-lg border-4 border-zinc-800 px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
           >
             {activePlayer === 0 && !isGameOver ? "Start" : "Pause"}
           </button>
