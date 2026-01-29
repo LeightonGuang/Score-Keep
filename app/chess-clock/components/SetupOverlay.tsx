@@ -88,8 +88,8 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 p-4 backdrop-blur-sm sm:p-6 landscape:p-2">
-      <div className="animate-in fade-in zoom-in scrollbar-hide flex max-h-full w-full max-w-sm flex-col gap-6 overflow-y-auto px-1 py-4 duration-300 landscape:max-h-screen landscape:gap-2 landscape:py-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-sm sm:p-6 landscape:p-2">
+      <div className="animate-in fade-in zoom-in scrollbar-hide flex max-h-full w-full max-w-sm flex-col gap-6 overflow-y-auto px-4 py-4 duration-300 landscape:max-h-screen landscape:gap-2 landscape:py-2">
         <h1 className="text-center text-3xl font-black tracking-tight landscape:hidden">
           CHESS CLOCK
         </h1>
