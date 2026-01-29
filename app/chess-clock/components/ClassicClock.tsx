@@ -50,17 +50,17 @@ export const ClassicClock: React.FC = () => {
                   clipPath:
                     activePlayer === 1 ||
                     (activePlayer === 0 && readyPlayer === 1)
-                      ? "polygon(0% 0%, 100% 5%, 100% 100%, 0% 100%)"
-                      : "polygon(0% 5%, 100% 5%, 100% 100%, 0% 100%)",
+                      ? "polygon(0% 0%, 100% 1rem, 100% 100%, 0% 100%)"
+                      : "polygon(0% 1rem, 100% 1rem, 100% 100%, 0% 100%)",
                 }}
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-6 bg-red-600 transition-all duration-300 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-300 ${
                     activePlayer === 1 ||
                     (activePlayer === 0 && readyPlayer === 1)
                       ? "translate-y-0"
-                      : "translate-y-6"
+                      : "translate-y-4"
                   }`}
                   style={{
                     clipPath: "polygon(0% 0%, 100% 100%, 0% 100%)",
@@ -93,17 +93,17 @@ export const ClassicClock: React.FC = () => {
                   clipPath:
                     activePlayer === 2 ||
                     (activePlayer === 0 && readyPlayer === 2)
-                      ? "polygon(0% 5%, 100% 0%, 100% 100%, 0% 100%)"
-                      : "polygon(0% 5%, 100% 5%, 100% 100%, 0% 100%)",
+                      ? "polygon(0% 1rem, 100% 0%, 100% 100%, 0% 100%)"
+                      : "polygon(0% 1rem, 100% 1rem, 100% 100%, 0% 100%)",
                 }}
               >
                 {/* Red Wedge Indicator (Pivoting) */}
                 <div
-                  className={`absolute right-0 bottom-0 left-0 h-6 bg-red-600 transition-all duration-300 ${
+                  className={`absolute right-0 bottom-0 left-0 h-4 bg-red-600 transition-all duration-300 ${
                     activePlayer === 2 ||
                     (activePlayer === 0 && readyPlayer === 2)
                       ? "translate-y-0"
-                      : "translate-y-6"
+                      : "translate-y-4"
                   }`}
                   style={{
                     clipPath: "polygon(0% 100%, 100% 0%, 100% 100%)",
