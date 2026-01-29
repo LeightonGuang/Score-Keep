@@ -121,6 +121,12 @@ const ChessClockPage = () => {
   const handleInteraction = (playerNum: 1 | 2) => {
     if (isGameOver || isSetupOpen) return;
 
+    // Check if the side is actually "active" or "ready" to prevent vibration on disabled sides
+    const isAllowed =
+      activePlayer === playerNum ||
+      (activePlayer === 0 && (!hasPrimed || readyPlayer === playerNum));
+    if (!isAllowed) return;
+
     // Switch turn
     const currentEnemy = playerNum === 1 ? 2 : 1;
 
