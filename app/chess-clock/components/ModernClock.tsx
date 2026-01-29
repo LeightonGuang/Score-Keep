@@ -1,36 +1,22 @@
-"use client";
+import { useChessClock } from "../context/ChessClockContext";
 
-interface ModernClockProps {
-  time1: number;
-  time2: number;
-  p1Name: string;
-  p2Name: string;
-  activePlayer: 0 | 1 | 2;
-  readyPlayer: 1 | 2;
-  hasPrimed: boolean;
-  isGameOver: boolean;
-  handleTouchStart: (e: React.TouchEvent, playerNum: 1 | 2) => void;
-  handleMouseDown: (e: React.MouseEvent, playerNum: 1 | 2) => void;
-  formatTime: (seconds: number) => string;
-  onReset: () => void;
-  onPause: () => void;
-}
+export const ModernClock: React.FC = () => {
+  const {
+    time1,
+    time2,
+    p1Name,
+    p2Name,
+    activePlayer,
+    readyPlayer,
+    hasPrimed,
+    isGameOver,
+    handleTouchStart,
+    handleMouseDown,
+    formatTime,
+    resetGame: onReset,
+    togglePause: onPause,
+  } = useChessClock();
 
-export const ModernClock: React.FC<ModernClockProps> = ({
-  time1,
-  time2,
-  p1Name,
-  p2Name,
-  activePlayer,
-  readyPlayer,
-  hasPrimed,
-  isGameOver,
-  handleTouchStart,
-  handleMouseDown,
-  formatTime,
-  onReset,
-  onPause,
-}) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-zinc-950">
       {/* Forced Portrait Container */}

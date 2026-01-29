@@ -1,40 +1,5 @@
-"use client";
-
 import Link from "next/link";
-
-type ClockStyle = "modern" | "classic";
-
-interface SetupOverlayProps {
-  p1Name: string;
-  setP1Name: (name: string) => void;
-  p2Name: string;
-  setP2Name: (name: string) => void;
-  baseHoursInput: string;
-  setBaseHoursInput: (h: string) => void;
-  baseMinutesInput: string;
-  setBaseMinutesInput: (m: string) => void;
-  baseSecondsInput: string;
-  setBaseSecondsInput: (s: string) => void;
-  incrementSecondsInput: string;
-  setIncrementSecondsInput: (inc: string) => void;
-  p2HoursInput: string;
-  setP2HoursInput: (h: string) => void;
-  p2MinutesInput: string;
-  setP2MinutesInput: (m: string) => void;
-  p2SecondsInput: string;
-  setP2SecondsInput: (s: string) => void;
-  p2IncrementSecondsInput: string;
-  setP2IncrementSecondsInput: (inc: string) => void;
-  isMirrored: boolean;
-  setIsMirrored: (mirrored: boolean) => void;
-  selectedPreset: string | null;
-  setSelectedPreset: (preset: string | null) => void;
-  clockStyle: ClockStyle;
-  setClockStyle: (style: ClockStyle) => void;
-  errors: { base?: string; inc?: string };
-  setErrors: (errors: { base?: string; inc?: string }) => void;
-  onStart: () => void;
-}
+import { useChessClock } from "../context/ChessClockContext";
 
 const PRESETS = [
   { label: "1+0", h: "0", m: "1", s: "0", inc: "0" },
@@ -48,37 +13,39 @@ const PRESETS = [
   { label: "30+0", h: "0", m: "30", s: "0", inc: "0" },
 ];
 
-export const SetupOverlay: React.FC<SetupOverlayProps> = ({
-  p1Name,
-  setP1Name,
-  p2Name,
-  setP2Name,
-  baseHoursInput,
-  setBaseHoursInput,
-  baseMinutesInput,
-  setBaseMinutesInput,
-  baseSecondsInput,
-  setBaseSecondsInput,
-  incrementSecondsInput,
-  setIncrementSecondsInput,
-  p2HoursInput,
-  setP2HoursInput,
-  p2MinutesInput,
-  setP2MinutesInput,
-  p2SecondsInput,
-  setP2SecondsInput,
-  p2IncrementSecondsInput,
-  setP2IncrementSecondsInput,
-  isMirrored,
-  setIsMirrored,
-  selectedPreset,
-  setSelectedPreset,
-  clockStyle,
-  setClockStyle,
-  errors,
-  setErrors,
-  onStart,
-}) => {
+export const SetupOverlay: React.FC = () => {
+  const {
+    p1Name,
+    setP1Name,
+    p2Name,
+    setP2Name,
+    baseHoursInput,
+    setBaseHoursInput,
+    baseMinutesInput,
+    setBaseMinutesInput,
+    baseSecondsInput,
+    setBaseSecondsInput,
+    incrementSecondsInput,
+    setIncrementSecondsInput,
+    p2HoursInput,
+    setP2HoursInput,
+    p2MinutesInput,
+    setP2MinutesInput,
+    p2SecondsInput,
+    setP2SecondsInput,
+    p2IncrementSecondsInput,
+    setP2IncrementSecondsInput,
+    isMirrored,
+    setIsMirrored,
+    selectedPreset,
+    setSelectedPreset,
+    clockStyle,
+    setClockStyle,
+    errors,
+    setErrors,
+    startGame: onStart,
+  } = useChessClock();
+
   const handlePresetSelect = (p: (typeof PRESETS)[0]) => {
     setSelectedPreset(p.label);
     setBaseHoursInput(p.h);

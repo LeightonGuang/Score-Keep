@@ -1,37 +1,23 @@
-"use client";
 import { useState } from "react";
+import { useChessClock } from "../context/ChessClockContext";
 
-interface ClassicClockProps {
-  time1: number;
-  time2: number;
-  p1Name: string;
-  p2Name: string;
-  activePlayer: 0 | 1 | 2;
-  readyPlayer: 1 | 2;
-  hasPrimed: boolean;
-  isGameOver: boolean;
-  handleTouchStart: (e: React.TouchEvent, playerNum: 1 | 2) => void;
-  handleMouseDown: (e: React.MouseEvent, playerNum: 1 | 2) => void;
-  formatTime: (seconds: number) => string;
-  onReset: () => void;
-  onPause: () => void;
-}
+export const ClassicClock: React.FC = () => {
+  const {
+    time1,
+    time2,
+    p1Name,
+    p2Name,
+    activePlayer,
+    readyPlayer,
+    hasPrimed,
+    isGameOver,
+    handleTouchStart,
+    handleMouseDown,
+    formatTime,
+    resetGame: onReset,
+    togglePause: onPause,
+  } = useChessClock();
 
-export const ClassicClock: React.FC<ClassicClockProps> = ({
-  time1,
-  time2,
-  p1Name,
-  p2Name,
-  activePlayer,
-  readyPlayer,
-  hasPrimed,
-  isGameOver,
-  handleTouchStart,
-  handleMouseDown,
-  formatTime,
-  onReset,
-  onPause,
-}) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
