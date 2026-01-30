@@ -53,6 +53,9 @@ export const LcdTimer: React.FC = () => {
   const isFlagged1 = isGameOver && time1 === 0;
   const isFlagged2 = isGameOver && time2 === 0;
 
+  const player1Active = activePlayer === 1 && !isGameOver;
+  const player2Active = activePlayer === 2 && !isGameOver;
+
   const showDelay =
     ((activePlayer === 1 && currentDelay1 > 0) ||
       (activePlayer === 2 && currentDelay2 > 0)) &&
@@ -125,28 +128,45 @@ export const LcdTimer: React.FC = () => {
 
         {/* Player 1 Indicators */}
         <div className="absolute inset-y-0 left-3 flex flex-col justify-between py-3">
-          {activePlayer === 1 && !isGameOver && (
-            <div className="h-2.5 w-2.5 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-          )}
+          <div
+            className={`h-2.5 w-2.5 rounded-full ${
+              player1Active
+                ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                : "border border-red-900/10 bg-red-600/10"
+            }`}
+          />
           <div className="flex-1" />
-          {isFlagged1 && (
-            <div className="text-[9px] font-black tracking-tighter text-red-900 uppercase">
+          {
+            <div
+              className={`text-[9px] font-black tracking-tighter ${
+                isFlagged1 ? "text-red-900" : "text-red-900/10"
+              } uppercase`}
+            >
               FLAG
             </div>
-          )}
+          }
         </div>
 
         {/* Player 2 Indicators */}
         <div className="absolute inset-y-0 right-3 flex flex-col justify-between py-3">
-          {activePlayer === 2 && !isGameOver && (
-            <div className="h-2.5 w-2.5 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-          )}
+          <div
+            className={`h-2.5 w-2.5 rounded-full ${
+              player2Active
+                ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                : "border border-red-900/10 bg-red-600/10"
+            }`}
+          />
+
           <div className="flex-1" />
-          {isFlagged2 && (
-            <div className="text-[9px] font-black tracking-tighter text-red-900 uppercase">
+          {
+            <div
+              className={`text-[9px] font-black tracking-tighter ${
+                isFlagged2 ? "text-red-900" : "text-red-900/10"
+              } uppercase`}
+            >
               FLAG
             </div>
-          )}
+          }
         </div>
       </div>
     </div>
