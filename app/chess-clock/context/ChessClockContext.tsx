@@ -45,6 +45,7 @@ interface ChessClockContextType {
   readyPlayer: 1 | 2;
   hasPrimed: boolean;
   isGameOver: boolean;
+  firstMovePlayer: 0 | 1 | 2;
 
   timingMode: "increment" | "delay";
   setTimingMode: (mode: "increment" | "delay") => void;
@@ -112,6 +113,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const [readyPlayer, setReadyPlayer] = useState<1 | 2>(1);
   const [hasPrimed, setHasPrimed] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [firstMovePlayer, setFirstMovePlayer] = useState<0 | 1 | 2>(0);
 
   const touchStarted = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -209,6 +211,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setActivePlayer(0);
     setReadyPlayer(1);
     setHasPrimed(false);
+    setFirstMovePlayer(1); // Player 1 starts as white by default
   };
 
   const handleInteraction = (playerNum: 1 | 2) => {
@@ -242,9 +245,11 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!hasPrimed) {
         setHasPrimed(true);
         setReadyPlayer(playerNum === 1 ? 2 : 1);
+        setFirstMovePlayer(playerNum === 1 ? 2 : 1);
       } else {
         if (readyPlayer === playerNum) {
           setReadyPlayer(currentEnemy);
+          setFirstMovePlayer(currentEnemy);
         }
       }
     }
@@ -412,6 +417,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsSetupOpen(true);
     setActivePlayer(0);
     setIsGameOver(false);
+    setFirstMovePlayer(0);
   };
 
   const togglePause = () => {
@@ -477,6 +483,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         readyPlayer,
         hasPrimed,
         isGameOver,
+        firstMovePlayer,
         startGame,
         resetGame,
         togglePause,
