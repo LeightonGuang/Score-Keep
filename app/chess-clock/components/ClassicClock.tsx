@@ -4,17 +4,15 @@ import LcdTimer from "./LcdTimer";
 
 export const ClassicClock: React.FC = () => {
   const {
-    time1,
-    time2,
     activePlayer,
     readyPlayer,
     hasPrimed,
     isGameOver,
     handleTouchStart,
     handleMouseDown,
-    formatTime,
     resetGame: onReset,
     togglePause: onPause,
+    selectedPreset,
   } = useChessClock();
 
   const [isFlipped, setIsFlipped] = useState(false);
@@ -140,45 +138,51 @@ export const ClassicClock: React.FC = () => {
           </div>
 
           {/* LCD Displays */}
-          <div className="mt-auto flex w-full flex-row">
-            {/* LCD 1 */}
-            <LcdTimer time={time1} isActive={activePlayer === 1} />
-
-            {/* LCD 2 */}
-            <LcdTimer time={time2} isActive={activePlayer === 2} />
-          </div>
+          <LcdTimer />
         </div>
 
         {/* Bottom Control Bar */}
         <div className="flex h-max shrink-0 items-center justify-between px-8 py-2">
-          <button
-            onClick={onReset}
-            className="group flex h-full flex-col items-center gap-1 transition-all hover:cursor-pointer active:scale-95"
-          >
-            <div className="flex items-center justify-center rounded-md bg-zinc-800/80 p-1 shadow-sm transition-all group-active:bg-zinc-700 hover:bg-zinc-700">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-zinc-500"
-              >
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={onReset}
+              className="group flex h-full flex-col items-center gap-1 transition-all hover:cursor-pointer active:scale-95"
+            >
+              <div className="flex items-center justify-center rounded-md bg-zinc-800/80 p-1 shadow-sm transition-all group-active:bg-zinc-700 hover:bg-zinc-700">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-zinc-500"
+                >
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <span className="text-[9px] font-black tracking-widest text-zinc-600 uppercase">
+                Settings
+              </span>
+            </button>
+
+            {/* Preset Display */}
+            <div className="flex flex-col items-start justify-center">
+              <span className="text-[7px] font-black tracking-[0.2em] text-zinc-600 uppercase">
+                Control
+              </span>
+              <span className="text-[9px] font-black tracking-widest whitespace-nowrap text-zinc-400 uppercase">
+                {selectedPreset || "Custom"}
+              </span>
             </div>
-            <span className="text-[9px] font-black tracking-widest text-zinc-600 uppercase">
-              Settings
-            </span>
-          </button>
+          </div>
 
           <button
             onClick={onPause}
-            className={`flex items-center justify-center rounded-lg border-4 border-zinc-800 px-4 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all hover:cursor-pointer active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
+            className={`absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-lg border-4 border-zinc-800 px-8 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all hover:cursor-pointer active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
           >
             {activePlayer === 0 && !isGameOver ? "Start" : "Pause"}
           </button>

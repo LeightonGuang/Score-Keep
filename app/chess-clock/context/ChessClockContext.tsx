@@ -73,7 +73,9 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const [p2IncrementSecondsInput, setP2IncrementSecondsInput] = useState("2");
 
   const [isMirrored, setIsMirrored] = useState(true);
-  const [selectedPreset, setSelectedPreset] = useState<string | null>("3+2");
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(
+    "3 mins + 2 sec/move",
+  );
 
   const [errors, setErrors] = useState<{ base?: string; inc?: string }>({});
   const [isSetupOpen, setIsSetupOpen] = useState(true);
