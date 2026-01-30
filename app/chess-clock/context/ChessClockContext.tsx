@@ -293,7 +293,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const resetGame = () => {
     if (!isGameOver) {
       const confirmReset = window.confirm(
-        "Are you sure you want to reset the clock and go to settings? This will end the current game.",
+        "Are you sure you want to go to settings? This will reset the clock.",
       );
       if (!confirmReset) return;
     }
