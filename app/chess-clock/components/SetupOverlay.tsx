@@ -2,15 +2,17 @@ import Link from "next/link";
 import { useChessClock } from "../context/ChessClockContext";
 
 const PRESETS = [
-  { label: "1+0", h: "0", m: "1", s: "0", inc: "0" },
-  { label: "3+0", h: "0", m: "3", s: "0", inc: "0" },
-  { label: "3+2", h: "0", m: "3", s: "0", inc: "2" },
-  { label: "5+0", h: "0", m: "5", s: "0", inc: "0" },
-  { label: "5+3", h: "0", m: "5", s: "0", inc: "3" },
-  { label: "10+0", h: "0", m: "10", s: "0", inc: "0" },
-  { label: "10+5", h: "0", m: "10", s: "0", inc: "5" },
-  { label: "15+10", h: "0", m: "15", s: "0", inc: "10" },
-  { label: "30+0", h: "0", m: "30", s: "0", inc: "0" },
+  { label: "3 mins", h: "0", m: "3", s: "0", inc: "0" },
+  { label: "5 mins", h: "0", m: "5", s: "0", inc: "0" },
+  { label: "25 mins", h: "0", m: "25", s: "0", inc: "0" },
+  { label: "30 mins", h: "0", m: "30", s: "0", inc: "0" },
+  { label: "60 mins", h: "1", m: "0", s: "0", inc: "0" },
+  { label: "3 mins + 2 sec/move", h: "0", m: "3", s: "0", inc: "2" },
+  { label: "5 mins + 3 sec/move", h: "0", m: "5", s: "0", inc: "3" },
+  { label: "10 mins + 5 sec/move", h: "0", m: "10", s: "0", inc: "5" },
+  { label: "15 mins + 10 sec/move", h: "0", m: "15", s: "0", inc: "10" },
+  { label: "25 mins + 10 sec/move", h: "0", m: "25", s: "0", inc: "10" },
+  { label: "90 mins + 30 sec/move", h: "1", m: "30", s: "0", inc: "30" },
 ];
 
 export const SetupOverlay: React.FC = () => {
@@ -130,7 +132,7 @@ export const SetupOverlay: React.FC = () => {
         {/* Presets Dropdown */}
         <div className="space-y-2">
           <label className="ml-1 text-[9px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
-            Time Control
+            Time Control Presets
           </label>
           <div className="relative">
             <select
