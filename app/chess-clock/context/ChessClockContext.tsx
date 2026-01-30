@@ -1,4 +1,5 @@
 "use client";
+
 import React, {
   createContext,
   useContext,
@@ -115,6 +116,12 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const touchStarted = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const wakeLockRef = useRef<any>(null);
+  const lastTickRef = useRef<number>(0);
+
+  // Store the start time when clock begins running
+  const startTimeRef = useRef<number>(0);
+  const initialTimeRef = useRef<number>(0);
+  const initialDelayRef = useRef<number>(0);
 
   // Wake Lock logic
   const requestWakeLock = async () => {
@@ -235,9 +242,6 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!hasPrimed) {
         setHasPrimed(true);
         setReadyPlayer(playerNum === 1 ? 2 : 1);
-        // Set delay for the player who IS NOT the current interaction player if they are about to start
-        // wait, when we prime, nobody's clock is running.
-        // When we finally start (togglePause or second tap), then delay should set.
       } else {
         if (readyPlayer === playerNum) {
           setReadyPlayer(currentEnemy);
@@ -249,7 +253,6 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleTouchStart = (e: React.TouchEvent, playerNum: 1 | 2) => {
     if (e.cancelable) e.preventDefault();
     touchStarted.current = true;
-    // Reset after a short delay to allow subsequent interactions from other devices/players
     setTimeout(() => {
       touchStarted.current = false;
     }, 500);
@@ -267,41 +270,91 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (activePlayer !== 0 && !isGameOver && !isSetupOpen) {
       requestWakeLock();
+
+      // Record the start time and initial values when clock starts
+      startTimeRef.current = Date.now();
+      if (activePlayer === 1) {
+        initialTimeRef.current = time1;
+        initialDelayRef.current = currentDelay1;
+      } else {
+        initialTimeRef.current = time2;
+        initialDelayRef.current = currentDelay2;
+      }
+
       timerRef.current = setInterval(() => {
+        const now = Date.now();
+        const totalElapsed = (now - startTimeRef.current) / 1000; // Total seconds elapsed since this turn started
+
         if (activePlayer === 1) {
-          setCurrentDelay1((d) => {
-            if (d > 0) {
-              return Math.max(0, d - 0.01);
-            } else {
-              setTime1((prev) => {
-                if (prev <= 0.01) {
-                  setIsGameOver(true);
-                  setActivePlayer(0);
-                  return 0;
-                }
-                return prev - 0.01;
-              });
-              return 0;
+          // Calculate delay countdown
+          if (initialDelayRef.current > 0) {
+            const newDelay = Math.max(
+              0,
+              initialDelayRef.current - totalElapsed,
+            );
+            setCurrentDelay1(newDelay);
+
+            // If delay has run out, start counting down time
+            if (newDelay <= 0) {
+              const timeElapsedAfterDelay =
+                totalElapsed - initialDelayRef.current;
+              const newTime = initialTimeRef.current - timeElapsedAfterDelay;
+
+              if (newTime <= 0) {
+                setTime1(0);
+                setIsGameOver(true);
+                setActivePlayer(0);
+              } else {
+                setTime1(newTime);
+              }
             }
-          });
+          } else {
+            // No delay, just count down time
+            const newTime = initialTimeRef.current - totalElapsed;
+
+            if (newTime <= 0) {
+              setTime1(0);
+              setIsGameOver(true);
+              setActivePlayer(0);
+            } else {
+              setTime1(newTime);
+            }
+          }
         } else {
-          setCurrentDelay2((d) => {
-            if (d > 0) {
-              return Math.max(0, d - 0.01);
-            } else {
-              setTime2((prev) => {
-                if (prev <= 0.01) {
-                  setIsGameOver(true);
-                  setActivePlayer(0);
-                  return 0;
-                }
-                return prev - 0.01;
-              });
-              return 0;
+          // Same logic for player 2
+          if (initialDelayRef.current > 0) {
+            const newDelay = Math.max(
+              0,
+              initialDelayRef.current - totalElapsed,
+            );
+            setCurrentDelay2(newDelay);
+
+            if (newDelay <= 0) {
+              const timeElapsedAfterDelay =
+                totalElapsed - initialDelayRef.current;
+              const newTime = initialTimeRef.current - timeElapsedAfterDelay;
+
+              if (newTime <= 0) {
+                setTime2(0);
+                setIsGameOver(true);
+                setActivePlayer(0);
+              } else {
+                setTime2(newTime);
+              }
             }
-          });
+          } else {
+            const newTime = initialTimeRef.current - totalElapsed;
+
+            if (newTime <= 0) {
+              setTime2(0);
+              setIsGameOver(true);
+              setActivePlayer(0);
+            } else {
+              setTime2(newTime);
+            }
+          }
         }
-      }, 10);
+      }, 10); // Update every 10ms for smooth hundredths display
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
       releaseWakeLock();
@@ -366,7 +419,6 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       setHasPrimed(true);
       setActivePlayer(readyPlayer);
 
-      // Initialize delay ONLY for the very first move of the game
       if (isFirstMoveRef.current) {
         if (readyPlayer === 1) {
           if (modeRef1.current === "delay") {
