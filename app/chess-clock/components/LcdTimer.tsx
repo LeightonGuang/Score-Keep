@@ -128,7 +128,7 @@ export const LcdTimer: React.FC = () => {
         </div>
 
         {/* Player 1 Indicators */}
-        <div className="absolute left-3 flex flex-col justify-between">
+        <div className="absolute left-3 flex flex-col">
           <div className="flex flex-col items-center gap-1">
             {/* <div
               className={`h-2.5 w-2.5 rounded-full ${
@@ -175,7 +175,7 @@ export const LcdTimer: React.FC = () => {
               }`}
             /> */}
             <div
-              className={`text-[9px] font-black tracking-tighter ${
+              className={`text-[9px] leading-none font-black tracking-tighter ${
                 firstMovePlayer === 2 ? "text-zinc-900" : "text-zinc-900/20"
               } uppercase`}
             >
