@@ -60,19 +60,21 @@ export const LcdTimer: React.FC = () => {
 
   return (
     <div className="w-full">
-      <div className="relative flex items-center justify-between overflow-hidden bg-[#a3b18a] px-10 py-2 text-[#1a1c1e] shadow-[inset_0_2px_12px_rgba(0,0,0,0.3)] sm:h-32 landscape:h-16 landscape:px-12">
+      <div className="relative grid grid-cols-[1fr_auto_1fr] items-center overflow-hidden bg-[#a3b18a] px-10 py-2 text-[#1a1c1e] shadow-[inset_0_2px_12px_rgba(0,0,0,0.3)] sm:h-32 landscape:h-16 landscape:px-12">
         {/* Background "Unlit" segments mask */}
 
         {/* Player 1 Time */}
-        <div className="relative">
-          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
-            88:88:88
-          </span>
-          <span
-            className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged1 ? "animate-pulse text-red-900" : ""}`}
-          >
-            {player1?.time}
-          </span>
+        <div className="relative flex justify-center">
+          <div className="relative">
+            <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+              88:88:88
+            </span>
+            <span
+              className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged1 ? "animate-pulse text-red-900" : ""}`}
+            >
+              {player1?.time}
+            </span>
+          </div>
         </div>
 
         {/* Center Delay Display */}
@@ -108,15 +110,17 @@ export const LcdTimer: React.FC = () => {
         </div>
 
         {/* Player 2 Time */}
-        <div className="relative">
-          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
-            88:88:88
-          </span>
-          <span
-            className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged2 ? "animate-pulse text-red-900" : ""}`}
-          >
-            {player2?.time}
-          </span>
+        <div className="relative flex justify-center">
+          <div className="relative">
+            <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+              88:88:88
+            </span>
+            <span
+              className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged2 ? "animate-pulse text-red-900" : ""}`}
+            >
+              {player2?.time}
+            </span>
+          </div>
         </div>
 
         {/* Player 1 Indicators */}
