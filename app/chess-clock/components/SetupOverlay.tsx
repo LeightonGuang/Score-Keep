@@ -1,18 +1,91 @@
 import Link from "next/link";
 import { useChessClock } from "../context/ChessClockContext";
 
-const PRESETS = [
+const PRESETS: {
+  label: string;
+  h: string;
+  m: string;
+  s: string;
+  inc: string;
+  mode?: "increment" | "delay";
+}[] = [
   { label: "3 mins", h: "0", m: "3", s: "0", inc: "0" },
   { label: "5 mins", h: "0", m: "5", s: "0", inc: "0" },
   { label: "25 mins", h: "0", m: "25", s: "0", inc: "0" },
   { label: "30 mins", h: "0", m: "30", s: "0", inc: "0" },
   { label: "60 mins", h: "1", m: "0", s: "0", inc: "0" },
-  { label: "3 mins + 2 sec/move", h: "0", m: "3", s: "0", inc: "2" },
-  { label: "5 mins + 3 sec/move", h: "0", m: "5", s: "0", inc: "3" },
-  { label: "10 mins + 5 sec/move", h: "0", m: "10", s: "0", inc: "5" },
-  { label: "15 mins + 10 sec/move", h: "0", m: "15", s: "0", inc: "10" },
-  { label: "25 mins + 10 sec/move", h: "0", m: "25", s: "0", inc: "10" },
-  { label: "90 mins + 30 sec/move", h: "1", m: "30", s: "0", inc: "30" },
+  {
+    label: "3 mins + 2 sec/move",
+    h: "0",
+    m: "3",
+    s: "0",
+    inc: "2",
+    mode: "increment",
+  },
+  {
+    label: "5 mins + 3 sec/move",
+    h: "0",
+    m: "5",
+    s: "0",
+    inc: "3",
+    mode: "increment",
+  },
+  {
+    label: "10 mins + 5 sec/move",
+    h: "0",
+    m: "10",
+    s: "0",
+    inc: "5",
+    mode: "increment",
+  },
+  {
+    label: "15 mins + 10 sec/move",
+    h: "0",
+    m: "15",
+    s: "0",
+    inc: "10",
+    mode: "increment",
+  },
+  {
+    label: "25 mins + 10 sec/move",
+    h: "0",
+    m: "25",
+    s: "0",
+    inc: "10",
+    mode: "increment",
+  },
+  {
+    label: "90 mins + 30 sec/move",
+    h: "1",
+    m: "30",
+    s: "0",
+    inc: "30",
+    mode: "increment",
+  },
+  {
+    label: "5 mins + 2s delay",
+    h: "0",
+    m: "5",
+    s: "0",
+    inc: "2",
+    mode: "delay",
+  },
+  {
+    label: "10 mins + 5s delay",
+    h: "0",
+    m: "10",
+    s: "0",
+    inc: "5",
+    mode: "delay",
+  },
+  {
+    label: "25 mins + 5s delay",
+    h: "0",
+    m: "25",
+    s: "0",
+    inc: "5",
+    mode: "delay",
+  },
 ];
 
 export const SetupOverlay: React.FC = () => {
@@ -37,6 +110,10 @@ export const SetupOverlay: React.FC = () => {
     setIsMirrored,
     selectedPreset,
     setSelectedPreset,
+    timingMode,
+    setTimingMode,
+    p2TimingMode,
+    setP2TimingMode,
     clockStyle,
     setClockStyle,
     errors,
@@ -50,6 +127,7 @@ export const SetupOverlay: React.FC = () => {
     setBaseMinutesInput(p.m);
     setBaseSecondsInput(p.s);
     setIncrementSecondsInput(p.inc);
+    setTimingMode(p.mode as "increment" | "delay");
     setIsMirrored(true); // Presets are always mirrored
     setErrors({});
   };
@@ -224,17 +302,38 @@ export const SetupOverlay: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between gap-2 px-1 py-1">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase">
-                    Incr
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="Secs"
-                    value={incrementSecondsInput}
-                    onChange={(e) => setIncrementSecondsInput(e.target.value)}
-                    className="w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
-                  />
+                <div className="mt-1 flex items-center justify-between gap-2 px-1 py-1">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                      Mode
+                    </span>
+                    <div className="mt-1 flex gap-1">
+                      <button
+                        onClick={() => setTimingMode("increment")}
+                        className={`rounded px-2 py-0.5 text-[8px] font-bold uppercase transition-colors ${timingMode === "increment" ? "bg-white text-zinc-950" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}
+                      >
+                        Inc
+                      </button>
+                      <button
+                        onClick={() => setTimingMode("delay")}
+                        className={`rounded px-2 py-0.5 text-[8px] font-bold uppercase transition-colors ${timingMode === "delay" ? "bg-white text-zinc-950" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}
+                      >
+                        Delay
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                      {timingMode === "increment" ? "Incr" : "Delay"}
+                    </span>
+                    <input
+                      type="number"
+                      placeholder="Secs"
+                      value={incrementSecondsInput}
+                      onChange={(e) => setIncrementSecondsInput(e.target.value)}
+                      className="mt-1 w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -273,19 +372,40 @@ export const SetupOverlay: React.FC = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-2 px-1 py-1">
-                    <span className="text-[8px] font-bold text-zinc-500 uppercase">
-                      Incr
-                    </span>
-                    <input
-                      type="number"
-                      placeholder="Secs"
-                      value={p2IncrementSecondsInput}
-                      onChange={(e) =>
-                        setP2IncrementSecondsInput(e.target.value)
-                      }
-                      className="w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
-                    />
+                  <div className="mt-1 flex items-center justify-between gap-2 px-1 py-1">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                        Mode
+                      </span>
+                      <div className="mt-1 flex gap-1">
+                        <button
+                          onClick={() => setP2TimingMode("increment")}
+                          className={`rounded px-2 py-0.5 text-[8px] font-bold uppercase transition-colors ${p2TimingMode === "increment" ? "bg-white text-zinc-950" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}
+                        >
+                          Inc
+                        </button>
+                        <button
+                          onClick={() => setP2TimingMode("delay")}
+                          className={`rounded px-2 py-0.5 text-[8px] font-bold uppercase transition-colors ${p2TimingMode === "delay" ? "bg-white text-zinc-950" : "bg-zinc-800 text-zinc-500 hover:text-zinc-300"}`}
+                        >
+                          Delay
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[8px] font-bold text-zinc-500 uppercase">
+                        {p2TimingMode === "increment" ? "Incr" : "Delay"}
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="Secs"
+                        value={p2IncrementSecondsInput}
+                        onChange={(e) =>
+                          setP2IncrementSecondsInput(e.target.value)
+                        }
+                        className="mt-1 w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

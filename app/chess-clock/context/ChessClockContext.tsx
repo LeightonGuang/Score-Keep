@@ -45,6 +45,13 @@ interface ChessClockContextType {
   hasPrimed: boolean;
   isGameOver: boolean;
 
+  timingMode: "increment" | "delay";
+  setTimingMode: (mode: "increment" | "delay") => void;
+  p2TimingMode: "increment" | "delay";
+  setP2TimingMode: (mode: "increment" | "delay") => void;
+  currentDelay1: number;
+  currentDelay2: number;
+
   // Actions
   startGame: () => void;
   resetGame: () => void;
@@ -77,6 +84,13 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     "3 mins + 2 sec/move",
   );
 
+  const [timingMode, setTimingMode] = useState<"increment" | "delay">(
+    "increment",
+  );
+  const [p2TimingMode, setP2TimingMode] = useState<"increment" | "delay">(
+    "increment",
+  );
+
   const [errors, setErrors] = useState<{ base?: string; inc?: string }>({});
   const [isSetupOpen, setIsSetupOpen] = useState(true);
   const [clockStyle, setClockStyle] = useState<ClockStyle>("classic");
@@ -84,10 +98,15 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   // Shared Config for active game (using refs for direct access in callbacks)
   const incRef1 = useRef(0);
   const incRef2 = useRef(0);
+  const modeRef1 = useRef<"increment" | "delay">("increment");
+  const modeRef2 = useRef<"increment" | "delay">("increment");
+  const isFirstMoveRef = useRef(true);
 
   // Game State
   const [time1, setTime1] = useState(600);
   const [time2, setTime2] = useState(600);
+  const [currentDelay1, setCurrentDelay1] = useState(0);
+  const [currentDelay2, setCurrentDelay2] = useState(0);
   const [activePlayer, setActivePlayer] = useState<0 | 1 | 2>(0);
   const [readyPlayer, setReadyPlayer] = useState<1 | 2>(1);
   const [hasPrimed, setHasPrimed] = useState(false);
@@ -159,9 +178,24 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setErrors({});
     incRef1.current = increment1;
     incRef2.current = increment2;
+    modeRef1.current = timingMode;
+    modeRef2.current = isMirrored ? timingMode : p2TimingMode;
 
-    setTime1(totalSecs1 + increment1);
-    setTime2(totalSecs2 + increment2);
+    if (modeRef1.current === "increment") {
+      setTime1(totalSecs1 + increment1);
+    } else {
+      setTime1(totalSecs1);
+    }
+
+    if (modeRef2.current === "increment") {
+      setTime2(totalSecs2 + increment2);
+    } else {
+      setTime2(totalSecs2);
+    }
+
+    setCurrentDelay1(0);
+    setCurrentDelay2(0);
+    isFirstMoveRef.current = true;
 
     setIsSetupOpen(false);
     setIsGameOver(false);
@@ -183,9 +217,17 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlayer === playerNum) {
       triggerVibration();
       if (playerNum === 1) {
-        setTime1((prev) => prev + incRef1.current);
+        if (modeRef1.current === "increment") {
+          setTime1((prev) => prev + incRef1.current);
+        }
+        setCurrentDelay1(0);
+        setCurrentDelay2(modeRef2.current === "delay" ? incRef2.current : 0);
       } else {
-        setTime2((prev) => prev + incRef2.current);
+        if (modeRef2.current === "increment") {
+          setTime2((prev) => prev + incRef2.current);
+        }
+        setCurrentDelay2(0);
+        setCurrentDelay1(modeRef1.current === "delay" ? incRef1.current : 0);
       }
       setActivePlayer(currentEnemy);
     } else if (activePlayer === 0) {
@@ -193,6 +235,9 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!hasPrimed) {
         setHasPrimed(true);
         setReadyPlayer(playerNum === 1 ? 2 : 1);
+        // Set delay for the player who IS NOT the current interaction player if they are about to start
+        // wait, when we prime, nobody's clock is running.
+        // When we finally start (togglePause or second tap), then delay should set.
       } else {
         if (readyPlayer === playerNum) {
           setReadyPlayer(currentEnemy);
@@ -224,22 +269,36 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       requestWakeLock();
       timerRef.current = setInterval(() => {
         if (activePlayer === 1) {
-          setTime1((prev) => {
-            if (prev <= 0.01) {
-              setIsGameOver(true);
-              setActivePlayer(0);
+          setCurrentDelay1((d) => {
+            if (d > 0) {
+              return Math.max(0, d - 0.01);
+            } else {
+              setTime1((prev) => {
+                if (prev <= 0.01) {
+                  setIsGameOver(true);
+                  setActivePlayer(0);
+                  return 0;
+                }
+                return prev - 0.01;
+              });
               return 0;
             }
-            return prev - 0.01;
           });
         } else {
-          setTime2((prev) => {
-            if (prev <= 0.01) {
-              setIsGameOver(true);
-              setActivePlayer(0);
+          setCurrentDelay2((d) => {
+            if (d > 0) {
+              return Math.max(0, d - 0.01);
+            } else {
+              setTime2((prev) => {
+                if (prev <= 0.01) {
+                  setIsGameOver(true);
+                  setActivePlayer(0);
+                  return 0;
+                }
+                return prev - 0.01;
+              });
               return 0;
             }
-            return prev - 0.01;
           });
         }
       }, 10);
@@ -306,6 +365,20 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlayer === 0) {
       setHasPrimed(true);
       setActivePlayer(readyPlayer);
+
+      // Initialize delay ONLY for the very first move of the game
+      if (isFirstMoveRef.current) {
+        if (readyPlayer === 1) {
+          if (modeRef1.current === "delay") {
+            setCurrentDelay1(incRef1.current);
+          }
+        } else {
+          if (modeRef2.current === "delay") {
+            setCurrentDelay2(incRef2.current);
+          }
+        }
+        isFirstMoveRef.current = false;
+      }
       return;
     }
     setReadyPlayer(activePlayer as 1 | 2);
@@ -340,6 +413,12 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         isSetupOpen,
         clockStyle,
         setClockStyle,
+        timingMode,
+        setTimingMode,
+        p2TimingMode,
+        setP2TimingMode,
+        currentDelay1,
+        currentDelay2,
         time1,
         time2,
         activePlayer,

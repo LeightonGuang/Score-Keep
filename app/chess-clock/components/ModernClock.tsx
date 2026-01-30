@@ -4,6 +4,8 @@ export const ModernClock: React.FC = () => {
   const {
     time1,
     time2,
+    currentDelay1,
+    currentDelay2,
     activePlayer,
     readyPlayer,
     hasPrimed,
@@ -30,9 +32,14 @@ export const ModernClock: React.FC = () => {
           }
           className={`flex w-full flex-1 rotate-180 flex-col items-center justify-center transition-all duration-300 ${activePlayer === 1 || (activePlayer === 0 && readyPlayer === 1) ? "bg-white text-zinc-900" : "bg-zinc-900 text-zinc-500"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 1 ? "animate-pulse" : ""} ${isGameOver && time1 === 0 ? "bg-red-600 text-white" : ""} ${!isGameOver && activePlayer === 1 ? "shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]" : ""} `}
         >
-          <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[20vh]">
+          <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[18vh]">
             {formatTime(time1)}
           </span>
+          {activePlayer === 1 && currentDelay1 > 0 && (
+            <span className="absolute bottom-[10%] text-[5vw] font-black tracking-widest text-zinc-400 landscape:text-[4vh]">
+              DELAY: {Math.ceil(currentDelay1)}s
+            </span>
+          )}
         </button>
 
         <div className="relative flex h-24 items-center justify-around border-y border-zinc-800 bg-zinc-900 px-8">
@@ -70,9 +77,14 @@ export const ModernClock: React.FC = () => {
           }
           className={`flex w-full flex-1 flex-col items-center justify-center transition-all duration-300 ${activePlayer === 2 || (activePlayer === 0 && readyPlayer === 2) ? "bg-white text-zinc-900" : "bg-zinc-900 text-zinc-500"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 2 ? "animate-pulse" : ""} ${isGameOver && time2 === 0 ? "bg-red-600 text-white" : ""} ${!isGameOver && activePlayer === 2 ? "shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]" : ""} `}
         >
-          <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[20vh]">
+          <span className="text-[25vw] leading-none font-black tracking-tighter tabular-nums landscape:text-[18vh]">
             {formatTime(time2)}
           </span>
+          {activePlayer === 2 && currentDelay2 > 0 && (
+            <span className="absolute bottom-[10%] text-[5vw] font-black tracking-widest text-zinc-400 landscape:text-[4vh]">
+              DELAY: {Math.ceil(currentDelay2)}s
+            </span>
+          )}
         </button>
       </div>
     </div>

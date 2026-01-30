@@ -26,7 +26,7 @@ export const ClassicClock: React.FC = () => {
         {/* Digital Clock Main Body */}
         <div className="relative mx-4 flex min-h-0 flex-1 flex-col items-center justify-center bg-[#1a1c1e] p-2 pb-2 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.05)]">
           {/* Mechanical Rocker Buttons */}
-          <div className="relative mb-2 flex w-full flex-1 justify-between overflow-hidden">
+          <div className="relative mb-2 flex h-full w-full overflow-hidden">
             {/* Priming Instruction Overlay */}
             {activePlayer === 0 && !hasPrimed && !isGameOver && (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">

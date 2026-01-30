@@ -38,7 +38,14 @@ const getTimerData = (seconds: number) => {
 };
 
 export const LcdTimer: React.FC = () => {
-  const { time1, time2, activePlayer, isGameOver } = useChessClock();
+  const {
+    time1,
+    time2,
+    currentDelay1,
+    currentDelay2,
+    activePlayer,
+    isGameOver,
+  } = useChessClock();
 
   const player1 = getTimerData(time1);
   const player2 = getTimerData(time2);
@@ -61,6 +68,29 @@ export const LcdTimer: React.FC = () => {
           >
             {player1?.time}
           </span>
+        </div>
+
+        {/* Center Delay Display */}
+        <div className="flex h-full min-w-16 flex-col items-center justify-center px-2">
+          {((activePlayer === 1 && currentDelay1 > 0) ||
+            (activePlayer === 2 && currentDelay2 > 0)) &&
+            !isGameOver && (
+              <div className="flex flex-col items-center">
+                <span className="mb-1 text-[0.5rem] leading-none font-black tracking-[0.3em] text-zinc-900/40 uppercase opacity-90">
+                  Delay
+                </span>
+                <div className="relative">
+                  <span className="pointer-events-none absolute top-0 left-0 font-mono text-3xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+                    88
+                  </span>
+                  <span className="font-mono text-3xl leading-none font-black text-zinc-900 opacity-90 sm:text-3xl landscape:text-lg">
+                    {Math.ceil(
+                      activePlayer === 1 ? currentDelay1 : currentDelay2,
+                    ).toString().padStart(2, "\u00A0")}
+                  </span>
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Player 2 Time */}
