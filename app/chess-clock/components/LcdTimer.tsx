@@ -53,7 +53,7 @@ export const LcdTimer: React.FC = () => {
 
         {/* Player 1 Time */}
         <div className="relative">
-          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.15] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
             88:88:88
           </span>
           <span
@@ -65,7 +65,7 @@ export const LcdTimer: React.FC = () => {
 
         {/* Player 2 Time */}
         <div className="relative">
-          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.15] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
             88:88:88
           </span>
           <span
