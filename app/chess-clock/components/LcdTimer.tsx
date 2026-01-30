@@ -1,59 +1,105 @@
 import { useChessClock } from "../context/ChessClockContext";
 
-const LcdTimer = ({ time, isActive }: { time: number; isActive: boolean }) => {
-  const { isGameOver } = useChessClock();
-  const isFlagged = isGameOver && time === 0;
+const getTimerData = (seconds: number) => {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const hundredths = Math.floor((seconds * 100) % 100);
 
-  const formatLcdTime = (seconds: number) => {
-    const totalMins = Math.floor(seconds / 60);
-    const displayMins = totalMins % 100;
-    const secs = Math.floor(seconds % 60);
-    const hundredths = Math.floor((seconds * 100) % 100);
+  const h = hrs.toString().padStart(2, "\u00A0");
+  const m = mins.toString().padStart(2, hrs > 0 ? "0" : "\u00A0");
+  const s = secs.toString().padStart(2, "0");
 
-    const minsStr = displayMins.toString().padStart(2, " ");
-    const secsStr = secs.toString().padStart(2, "0");
+  if (seconds >= 3600) {
+    // 1 hour+: HH:MM:SS
+    return {
+      time: `${h}:${m}:${s}`,
+    };
+  } else if (seconds >= 600) {
+    // 10 mins - 1 hour: MM:SS only
+    const mm = mins.toString().padStart(2, "\u00A0");
+    return {
+      time: `\u00A0\u00A0\u00A0${mm}:${s}`,
+    };
+  } else if (seconds >= 60) {
+    // 1 min - 10 mins: MM:SS:t
+    const mm = mins.toString().padStart(2, "\u00A0");
+    const t = Math.floor(hundredths / 10);
+    return {
+      time: `${mm}:${s}.${t}\u00A0`,
+    };
+  } else if (seconds < 60) {
+    // Under 1 min: 00:SS:hh
+    const hh = hundredths.toString().padStart(2, "0");
+    return {
+      time: `\u00A0\u00A0\u00A0${s}.${hh}`,
+    };
+  }
+};
 
-    if (seconds < 60) {
-      // Under 1 minute: MM:SS:hh (Show 2-digit hundredths)
-      const hhStr = hundredths.toString().padStart(2, "0");
-      return `${minsStr}:${secsStr}:${hhStr}`;
-    } else if (seconds < 600) {
-      // 1-10 minutes: MM:SS:h  (Show 1-digit tenth + space)
-      const tenths = Math.floor(hundredths / 10);
-      return `${minsStr}:${secsStr}:${tenths} `;
-    } else {
-      // Over 10 minutes: MM:SS    (Hide ms and their colon, pad with 3 spaces)
-      return `${minsStr}:${secsStr}   `;
-    }
-  };
+export const LcdTimer: React.FC = () => {
+  const { time1, time2, activePlayer, isGameOver } = useChessClock();
 
-  const displayText = formatLcdTime(time);
+  const player1 = getTimerData(time1);
+  const player2 = getTimerData(time2);
+
+  const isFlagged1 = isGameOver && time1 === 0;
+  const isFlagged2 = isGameOver && time2 === 0;
 
   return (
-    <div className="relative flex flex-1 flex-col items-stretch justify-center rounded-2xl transition-all duration-300">
-      <div className="relative flex flex-col items-center justify-center overflow-hidden py-1 bg-[#a3b18a]  text-[#1a1c1e] shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] landscape:py-1">
+    <div className="w-full">
+      <div className="relative flex items-center justify-between overflow-hidden bg-[#a3b18a] px-10 py-2 text-[#1a1c1e] shadow-[inset_0_2px_12px_rgba(0,0,0,0.3)] sm:h-32 landscape:h-16 landscape:px-12">
         {/* Background "Unlit" segments mask */}
-        <div className="pointer-events-none absolute text-6xl font-bold tracking-tight tabular-nums opacity-[0.03] contrast-150 select-none sm:text-7xl">
-          <span className="font-mono">88:88:88</span>
+
+        {/* Player 1 Time */}
+        <div className="relative">
+          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.15] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+            88:88:88
+          </span>
+          <span
+            className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged1 ? "animate-pulse text-red-900" : ""}`}
+          >
+            {player1?.time}
+          </span>
         </div>
 
-        <span
-          className={`relative z-10 font-mono text-6xl font-bold tracking-tight tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged ? "animate-pulse text-red-900" : ""}`}
-        >
-          {displayText}
-        </span>
+        {/* Player 2 Time */}
+        <div className="relative">
+          <span className="pointer-events-none absolute top-0 left-0 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.15] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
+            88:88:88
+          </span>
+          <span
+            className={`relative z-10 font-mono text-5xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-90 sm:text-7xl landscape:text-4xl landscape:sm:text-5xl ${isFlagged2 ? "animate-pulse text-red-900" : ""}`}
+          >
+            {player2?.time}
+          </span>
+        </div>
 
-        {/* Active Indicator */}
-        {isActive && !isGameOver && (
-          <div className="absolute top-3 right-3 h-2 w-2 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
-        )}
+        {/* Player 1 Indicators */}
+        <div className="absolute inset-y-0 left-3 flex flex-col justify-between py-3">
+          {activePlayer === 1 && !isGameOver && (
+            <div className="h-2.5 w-2.5 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+          )}
+          <div className="flex-1" />
+          {isFlagged1 && (
+            <div className="text-[9px] font-black tracking-tighter text-red-900 uppercase">
+              FLAG
+            </div>
+          )}
+        </div>
 
-        {/* Flag Indicator */}
-        {isFlagged && (
-          <div className="absolute top-3 left-3 text-[8px] font-bold text-red-900">
-            FLAG
-          </div>
-        )}
+        {/* Player 2 Indicators */}
+        <div className="absolute inset-y-0 right-3 flex flex-col justify-between py-3">
+          {activePlayer === 2 && !isGameOver && (
+            <div className="h-2.5 w-2.5 rounded-full border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+          )}
+          <div className="flex-1" />
+          {isFlagged2 && (
+            <div className="text-[9px] font-black tracking-tighter text-red-900 uppercase">
+              FLAG
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

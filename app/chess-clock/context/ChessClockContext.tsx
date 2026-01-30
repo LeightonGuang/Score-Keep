@@ -81,9 +81,9 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isSetupOpen, setIsSetupOpen] = useState(true);
   const [clockStyle, setClockStyle] = useState<ClockStyle>("classic");
 
-  // Shared Config for active game
-  const [inc1, setInc1] = useState(0);
-  const [inc2, setInc2] = useState(0);
+  // Shared Config for active game (using refs for direct access in callbacks)
+  const incRef1 = useRef(0);
+  const incRef2 = useRef(0);
 
   // Game State
   const [time1, setTime1] = useState(600);
@@ -157,8 +157,8 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     setErrors({});
-    setInc1(increment1);
-    setInc2(increment2);
+    incRef1.current = increment1;
+    incRef2.current = increment2;
 
     setTime1(totalSecs1 + increment1);
     setTime2(totalSecs2 + increment2);
@@ -183,9 +183,9 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlayer === playerNum) {
       triggerVibration();
       if (playerNum === 1) {
-        setTime1((prev) => prev + inc1);
+        setTime1((prev) => prev + incRef1.current);
       } else {
-        setTime2((prev) => prev + inc2);
+        setTime2((prev) => prev + incRef2.current);
       }
       setActivePlayer(currentEnemy);
     } else if (activePlayer === 0) {
@@ -202,8 +202,12 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const handleTouchStart = (e: React.TouchEvent, playerNum: 1 | 2) => {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     touchStarted.current = true;
+    // Reset after a short delay to allow subsequent interactions from other devices/players
+    setTimeout(() => {
+      touchStarted.current = false;
+    }, 500);
     handleInteraction(playerNum);
   };
 
