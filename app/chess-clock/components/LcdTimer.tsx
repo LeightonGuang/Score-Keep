@@ -53,6 +53,11 @@ export const LcdTimer: React.FC = () => {
   const isFlagged1 = isGameOver && time1 === 0;
   const isFlagged2 = isGameOver && time2 === 0;
 
+  const showDelay =
+    ((activePlayer === 1 && currentDelay1 > 0) ||
+      (activePlayer === 2 && currentDelay2 > 0)) &&
+    !isGameOver;
+
   return (
     <div className="w-full">
       <div className="relative flex items-center justify-between overflow-hidden bg-[#a3b18a] px-10 py-2 text-[#1a1c1e] shadow-[inset_0_2px_12px_rgba(0,0,0,0.3)] sm:h-32 landscape:h-16 landscape:px-12">
@@ -72,25 +77,34 @@ export const LcdTimer: React.FC = () => {
 
         {/* Center Delay Display */}
         <div className="flex h-full min-w-16 flex-col items-center justify-center px-2">
-          {((activePlayer === 1 && currentDelay1 > 0) ||
-            (activePlayer === 2 && currentDelay2 > 0)) &&
-            !isGameOver && (
-              <div className="flex flex-col items-center">
-                <span className="mb-1 text-[0.5rem] leading-none font-black tracking-[0.3em] text-zinc-900/40 uppercase opacity-90">
-                  Delay
+          <div className="flex flex-col items-center">
+            <div className="relative grid place-items-center">
+              <span className="pointer-events-none absolute text-[0.5rem] font-black tracking-[0.3em] uppercase opacity-[0.05]">
+                Delay
+              </span>
+
+              <span className="text-[0.5rem] font-black tracking-[0.3em] text-zinc-900/40 uppercase opacity-90">
+                {showDelay ? "Delay" : "\u00A0"}
+              </span>
+            </div>
+
+            <div className="relative">
+              <span className="pointer-events-none absolute top-0 left-0 font-mono text-3xl leading-none font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05]">
+                88
+              </span>
+              {
+                <span className="font-mono text-3xl leading-none font-black text-zinc-900 opacity-90">
+                  {showDelay
+                    ? Math.ceil(
+                        activePlayer === 1 ? currentDelay1 : currentDelay2,
+                      )
+                        .toString()
+                        .padStart(2, "\u00A0")
+                    : "\u00A0\u00A0"}
                 </span>
-                <div className="relative">
-                  <span className="pointer-events-none absolute top-0 left-0 font-mono text-3xl font-bold tracking-tight whitespace-nowrap tabular-nums opacity-[0.05] sm:text-7xl landscape:text-4xl landscape:sm:text-5xl">
-                    88
-                  </span>
-                  <span className="font-mono text-3xl leading-none font-black text-zinc-900 opacity-90 sm:text-3xl landscape:text-lg">
-                    {Math.ceil(
-                      activePlayer === 1 ? currentDelay1 : currentDelay2,
-                    ).toString().padStart(2, "\u00A0")}
-                  </span>
-                </div>
-              </div>
-            )}
+              }
+            </div>
+          </div>
         </div>
 
         {/* Player 2 Time */}
