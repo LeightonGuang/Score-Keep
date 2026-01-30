@@ -396,7 +396,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     if (seconds < 60) {
-      return `${mins}:${secs.toString().padStart(2, "0")}.${hundredths.toString().padStart(2, "0")}`;
+      return `${secs.toString().padStart(2, "0")}.${hundredths.toString().padStart(2, "0")}`;
     }
 
     if (seconds < 600) {
