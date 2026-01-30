@@ -11,9 +11,18 @@ const PRESETS: {
 }[] = [
   { label: "3 mins", h: "0", m: "3", s: "0", inc: "0" },
   { label: "5 mins", h: "0", m: "5", s: "0", inc: "0" },
+  { label: "10 mins", h: "0", m: "10", s: "0", inc: "0" },
   { label: "25 mins", h: "0", m: "25", s: "0", inc: "0" },
   { label: "30 mins", h: "0", m: "30", s: "0", inc: "0" },
   { label: "60 mins", h: "1", m: "0", s: "0", inc: "0" },
+  {
+    label: "1 min + 1 sec/move",
+    h: "0",
+    m: "1",
+    s: "0",
+    inc: "1",
+    mode: "increment",
+  },
   {
     label: "3 mins + 2 sec/move",
     h: "0",
@@ -55,6 +64,14 @@ const PRESETS: {
     mode: "increment",
   },
   {
+    label: "60 mins + 5 sec/move",
+    h: "1",
+    m: "0",
+    s: "0",
+    inc: "5",
+    mode: "increment",
+  },
+  {
     label: "90 mins + 30 sec/move",
     h: "1",
     m: "30",
@@ -63,7 +80,7 @@ const PRESETS: {
     mode: "increment",
   },
   {
-    label: "5 mins + 2s delay",
+    label: "5 mins, 2s delay",
     h: "0",
     m: "5",
     s: "0",
@@ -71,7 +88,7 @@ const PRESETS: {
     mode: "delay",
   },
   {
-    label: "10 mins + 5s delay",
+    label: "10 mins, 5s delay",
     h: "0",
     m: "10",
     s: "0",
@@ -79,11 +96,19 @@ const PRESETS: {
     mode: "delay",
   },
   {
-    label: "25 mins + 5s delay",
+    label: "25 mins, 5s delay",
     h: "0",
     m: "25",
     s: "0",
     inc: "5",
+    mode: "delay",
+  },
+  {
+    label: "60 mins, 10s delay",
+    h: "1",
+    m: "0",
+    s: "0",
+    inc: "10",
     mode: "delay",
   },
 ];
