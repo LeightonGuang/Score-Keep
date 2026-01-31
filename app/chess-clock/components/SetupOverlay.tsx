@@ -205,7 +205,24 @@ export const SetupOverlay: React.FC = () => {
             CHESS CLOCK
           </h1>
 
-          <div className="w-10 shrink-0 landscape:hidden" />
+          <Link
+            href="/chess-clock/info"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-500 transition-all hover:bg-zinc-800 hover:text-white active:scale-90 landscape:hidden"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+          </Link>
         </div>
 
         {/* Style Selector */}
