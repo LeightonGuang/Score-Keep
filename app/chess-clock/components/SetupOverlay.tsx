@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useChessClock } from "../context/ChessClockContext";
+import { useChessClock, TimeControlStage } from "../context/ChessClockContext";
 
 const PRESETS: {
   label: string;
@@ -8,6 +8,7 @@ const PRESETS: {
   s: string;
   inc: string;
   mode?: "increment" | "delay";
+  stages?: TimeControlStage[];
 }[] = [
   { label: "3 mins", h: "0", m: "3", s: "0", inc: "0" },
   { label: "5 mins", h: "0", m: "5", s: "0", inc: "0" },
@@ -111,6 +112,24 @@ const PRESETS: {
     inc: "10",
     mode: "delay",
   },
+  {
+    label: "90+30 mins after 40 moves + 30s/move",
+    h: "1",
+    m: "30",
+    s: "0",
+    inc: "30",
+    mode: "increment",
+    stages: [{ moveNumber: 40, minutesToAdd: 30 }],
+  },
+  {
+    label: "100+50 mins after 40 moves + 30s/move",
+    h: "1",
+    m: "40",
+    s: "0",
+    inc: "30",
+    mode: "increment",
+    stages: [{ moveNumber: 40, minutesToAdd: 50 }],
+  },
 ];
 
 export const SetupOverlay: React.FC = () => {
@@ -143,6 +162,7 @@ export const SetupOverlay: React.FC = () => {
     setClockStyle,
     errors,
     setErrors,
+    setStages,
     startGame: onStart,
   } = useChessClock();
 
@@ -153,6 +173,7 @@ export const SetupOverlay: React.FC = () => {
     setBaseSecondsInput(p.s);
     setIncrementSecondsInput(p.inc);
     setTimingMode(p.mode as "increment" | "delay");
+    setStages(p.stages || []);
     setIsMirrored(true); // Presets are always mirrored
     setErrors({});
   };
@@ -244,6 +265,7 @@ export const SetupOverlay: React.FC = () => {
                 const val = e.target.value;
                 if (val === "custom") {
                   setSelectedPreset(null);
+                  setStages([]);
                 } else {
                   const p = PRESETS.find((x) => x.label === val);
                   if (p) handlePresetSelect(p);
