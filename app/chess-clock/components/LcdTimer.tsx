@@ -45,6 +45,7 @@ export const LcdTimer: React.FC = () => {
     currentDelay2,
     activePlayer,
     isGameOver,
+    firstMovePlayer,
   } = useChessClock();
 
   const player1 = getTimerData(time1);
@@ -127,46 +128,76 @@ export const LcdTimer: React.FC = () => {
         </div>
 
         {/* Player 1 Indicators */}
-        <div className="absolute inset-y-0 left-3 flex flex-col justify-between py-3">
-          <div
-            className={`h-2.5 w-2.5 rounded-full ${
-              player1Active
-                ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
-                : "border border-red-900/10 bg-red-600/10"
-            }`}
-          />
-          <div className="flex-1" />
-          {
+        <div className="absolute left-3 flex flex-col">
+          <div className="flex flex-col items-center gap-1">
+            {/* <div
+              className={`h-2.5 w-2.5 rounded-full ${
+                player1Active
+                  ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                  : "border border-red-900/10 bg-red-600/10"
+              }`}
+            /> */}
+
             <div
-              className={`text-[9px] font-black tracking-tighter ${
+              className={`text-[9px] leading-none font-black tracking-tighter ${
+                firstMovePlayer === 1 ? "text-zinc-900" : "text-zinc-900/20"
+              } uppercase`}
+            >
+              WHITE
+            </div>
+
+            <div
+              className={`text-[9px] leading-none font-black tracking-tighter ${
+                firstMovePlayer === 2 ? "text-zinc-900" : "text-zinc-900/20"
+              } uppercase`}
+            >
+              BLACK
+            </div>
+
+            <div
+              className={`text-[9px] leading-none font-black tracking-tighter ${
                 isFlagged1 ? "text-red-900" : "text-red-900/10"
               } uppercase`}
             >
               FLAG
             </div>
-          }
+          </div>
         </div>
 
         {/* Player 2 Indicators */}
-        <div className="absolute inset-y-0 right-3 flex flex-col justify-between py-3">
-          <div
-            className={`h-2.5 w-2.5 rounded-full ${
-              player2Active
-                ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
-                : "border border-red-900/10 bg-red-600/10"
-            }`}
-          />
-
-          <div className="flex-1" />
-          {
+        <div className="absolute right-3 flex flex-col">
+          <div className="flex flex-col items-center gap-1">
+            {/* <div
+              className={`h-2.5 w-2.5 rounded-full ${
+                player2Active
+                  ? "border border-red-900 bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]"
+                  : "border border-red-900/10 bg-red-600/10"
+              }`}
+            /> */}
             <div
-              className={`text-[9px] font-black tracking-tighter ${
+              className={`text-[9px] leading-none font-black tracking-tighter ${
+                firstMovePlayer === 2 ? "text-zinc-900" : "text-zinc-900/20"
+              } uppercase`}
+            >
+              WHITE
+            </div>
+
+            <div
+              className={`text-[9px] leading-none font-black tracking-tighter ${
+                firstMovePlayer === 1 ? "text-zinc-900" : "text-zinc-900/20"
+              } uppercase`}
+            >
+              BLACK
+            </div>
+
+            <div
+              className={`text-[9px] leading-none font-black tracking-tighter ${
                 isFlagged2 ? "text-red-900" : "text-red-900/10"
               } uppercase`}
             >
               FLAG
             </div>
-          }
+          </div>
         </div>
       </div>
     </div>

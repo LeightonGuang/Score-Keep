@@ -182,7 +182,7 @@ export const ClassicClock: React.FC = () => {
 
           <button
             onClick={onPause}
-            className={`absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-lg border-4 border-zinc-800 px-8 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all hover:cursor-pointer active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
+            className={`absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-lg border-4 border-zinc-800 px-6 py-2 text-[10px] font-black tracking-widest uppercase shadow-lg transition-all hover:cursor-pointer active:scale-95 ${activePlayer === 0 && !hasPrimed ? "bg-[#121417] text-zinc-300" : activePlayer === 0 ? "bg-[#121417] text-zinc-300 active:bg-zinc-800" : "bg-[#121417] text-zinc-300 active:bg-zinc-800"} ${activePlayer === 0 && hasPrimed && !isGameOver ? "animate-pulse border-zinc-500/50 bg-zinc-800 text-white!" : ""}`}
           >
             {activePlayer === 0 && !isGameOver ? "Start" : "Pause"}
           </button>

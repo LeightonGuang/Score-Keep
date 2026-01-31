@@ -1,90 +1,134 @@
 import Link from "next/link";
-import { useChessClock } from "../context/ChessClockContext";
+import { useChessClock, TimeControlStage } from "../context/ChessClockContext";
 
 const PRESETS: {
   label: string;
-  h: string;
-  m: string;
-  s: string;
-  inc: string;
+  h: number;
+  m: number;
+  s: number;
+  inc: number;
   mode?: "increment" | "delay";
+  stages?: TimeControlStage[];
 }[] = [
-  { label: "3 mins", h: "0", m: "3", s: "0", inc: "0" },
-  { label: "5 mins", h: "0", m: "5", s: "0", inc: "0" },
-  { label: "25 mins", h: "0", m: "25", s: "0", inc: "0" },
-  { label: "30 mins", h: "0", m: "30", s: "0", inc: "0" },
-  { label: "60 mins", h: "1", m: "0", s: "0", inc: "0" },
+  { label: "3 mins", h: 0, m: 3, s: 0, inc: 0 },
+  { label: "5 mins", h: 0, m: 5, s: 0, inc: 0 },
+  { label: "10 mins", h: 0, m: 10, s: 0, inc: 0 },
+  { label: "25 mins", h: 0, m: 25, s: 0, inc: 0 },
+  { label: "30 mins", h: 0, m: 30, s: 0, inc: 0 },
+  { label: "60 mins", h: 1, m: 0, s: 0, inc: 0 },
+  {
+    label: "1 min + 1 sec/move",
+    h: 0,
+    m: 1,
+    s: 0,
+    inc: 1,
+    mode: "increment",
+  },
   {
     label: "3 mins + 2 sec/move",
-    h: "0",
-    m: "3",
-    s: "0",
-    inc: "2",
+    h: 0,
+    m: 3,
+    s: 0,
+    inc: 2,
     mode: "increment",
   },
   {
     label: "5 mins + 3 sec/move",
-    h: "0",
-    m: "5",
-    s: "0",
-    inc: "3",
+    h: 0,
+    m: 5,
+    s: 0,
+    inc: 3,
     mode: "increment",
   },
   {
     label: "10 mins + 5 sec/move",
-    h: "0",
-    m: "10",
-    s: "0",
-    inc: "5",
+    h: 0,
+    m: 10,
+    s: 0,
+    inc: 5,
     mode: "increment",
   },
   {
     label: "15 mins + 10 sec/move",
-    h: "0",
-    m: "15",
-    s: "0",
-    inc: "10",
+    h: 0,
+    m: 15,
+    s: 0,
+    inc: 10,
     mode: "increment",
   },
   {
     label: "25 mins + 10 sec/move",
-    h: "0",
-    m: "25",
-    s: "0",
-    inc: "10",
+    h: 0,
+    m: 25,
+    s: 0,
+    inc: 10,
+    mode: "increment",
+  },
+  {
+    label: "60 mins + 5 sec/move",
+    h: 1,
+    m: 0,
+    s: 0,
+    inc: 5,
     mode: "increment",
   },
   {
     label: "90 mins + 30 sec/move",
-    h: "1",
-    m: "30",
-    s: "0",
-    inc: "30",
+    h: 1,
+    m: 30,
+    s: 0,
+    inc: 30,
     mode: "increment",
   },
   {
-    label: "5 mins + 2s delay",
-    h: "0",
-    m: "5",
-    s: "0",
-    inc: "2",
+    label: "5 mins, 2s delay",
+    h: 0,
+    m: 5,
+    s: 0,
+    inc: 2,
     mode: "delay",
   },
   {
-    label: "10 mins + 5s delay",
-    h: "0",
-    m: "10",
-    s: "0",
-    inc: "5",
+    label: "10 mins, 5s delay",
+    h: 0,
+    m: 10,
+    s: 0,
+    inc: 5,
     mode: "delay",
   },
   {
-    label: "25 mins + 5s delay",
-    h: "0",
-    m: "25",
-    s: "0",
-    inc: "5",
+    label: "25 mins, 5s delay",
+    h: 0,
+    m: 25,
+    s: 0,
+    inc: 5,
     mode: "delay",
+  },
+  {
+    label: "60 mins, 10s delay",
+    h: 1,
+    m: 0,
+    s: 0,
+    inc: 10,
+    mode: "delay",
+  },
+  {
+    label: "90+30 mins after 40 moves + 30s/move",
+    h: 1,
+    m: 30,
+    s: 0,
+    inc: 30,
+    mode: "increment",
+    stages: [{ moveNumber: 40, minutesToAdd: 30 }],
+  },
+  {
+    label: "100+50 mins after 40 moves + 30s/move",
+    h: 1,
+    m: 40,
+    s: 0,
+    inc: 30,
+    mode: "increment",
+    stages: [{ moveNumber: 40, minutesToAdd: 50 }],
   },
 ];
 
@@ -118,6 +162,7 @@ export const SetupOverlay: React.FC = () => {
     setClockStyle,
     errors,
     setErrors,
+    setStages,
     startGame: onStart,
   } = useChessClock();
 
@@ -128,6 +173,7 @@ export const SetupOverlay: React.FC = () => {
     setBaseSecondsInput(p.s);
     setIncrementSecondsInput(p.inc);
     setTimingMode(p.mode as "increment" | "delay");
+    setStages(p.stages || []);
     setIsMirrored(true); // Presets are always mirrored
     setErrors({});
   };
@@ -159,7 +205,24 @@ export const SetupOverlay: React.FC = () => {
             CHESS CLOCK
           </h1>
 
-          <div className="w-10 shrink-0 landscape:hidden" />
+          <Link
+            href="/chess-clock/info"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-500 transition-all hover:bg-zinc-800 hover:text-white active:scale-90 landscape:hidden"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+          </Link>
         </div>
 
         {/* Style Selector */}
@@ -219,6 +282,7 @@ export const SetupOverlay: React.FC = () => {
                 const val = e.target.value;
                 if (val === "custom") {
                   setSelectedPreset(null);
+                  setStages([]);
                 } else {
                   const p = PRESETS.find((x) => x.label === val);
                   if (p) handlePresetSelect(p);
@@ -279,7 +343,9 @@ export const SetupOverlay: React.FC = () => {
                       type="number"
                       placeholder="H"
                       value={baseHoursInput}
-                      onChange={(e) => setBaseHoursInput(e.target.value)}
+                      onChange={(e) =>
+                        setBaseHoursInput(Number(e.target.value))
+                      }
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
@@ -288,7 +354,9 @@ export const SetupOverlay: React.FC = () => {
                       type="number"
                       placeholder="M"
                       value={baseMinutesInput}
-                      onChange={(e) => setBaseMinutesInput(e.target.value)}
+                      onChange={(e) =>
+                        setBaseMinutesInput(Number(e.target.value))
+                      }
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
@@ -297,7 +365,9 @@ export const SetupOverlay: React.FC = () => {
                       type="number"
                       placeholder="S"
                       value={baseSecondsInput}
-                      onChange={(e) => setBaseSecondsInput(e.target.value)}
+                      onChange={(e) =>
+                        setBaseSecondsInput(Number(e.target.value))
+                      }
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
@@ -330,7 +400,9 @@ export const SetupOverlay: React.FC = () => {
                       type="number"
                       placeholder="Secs"
                       value={incrementSecondsInput}
-                      onChange={(e) => setIncrementSecondsInput(e.target.value)}
+                      onChange={(e) =>
+                        setIncrementSecondsInput(Number(e.target.value))
+                      }
                       className="mt-1 w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
@@ -349,7 +421,9 @@ export const SetupOverlay: React.FC = () => {
                         type="number"
                         placeholder="H"
                         value={p2HoursInput}
-                        onChange={(e) => setP2HoursInput(e.target.value)}
+                        onChange={(e) =>
+                          setP2HoursInput(Number(e.target.value))
+                        }
                         className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                       />
                     </div>
@@ -358,7 +432,9 @@ export const SetupOverlay: React.FC = () => {
                         type="number"
                         placeholder="M"
                         value={p2MinutesInput}
-                        onChange={(e) => setP2MinutesInput(e.target.value)}
+                        onChange={(e) =>
+                          setP2MinutesInput(Number(e.target.value))
+                        }
                         className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                       />
                     </div>
@@ -367,7 +443,9 @@ export const SetupOverlay: React.FC = () => {
                         type="number"
                         placeholder="S"
                         value={p2SecondsInput}
-                        onChange={(e) => setP2SecondsInput(e.target.value)}
+                        onChange={(e) =>
+                          setP2SecondsInput(Number(e.target.value))
+                        }
                         className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-center text-sm transition-colors focus:border-zinc-500 focus:outline-none"
                       />
                     </div>
@@ -401,7 +479,7 @@ export const SetupOverlay: React.FC = () => {
                         placeholder="Secs"
                         value={p2IncrementSecondsInput}
                         onChange={(e) =>
-                          setP2IncrementSecondsInput(e.target.value)
+                          setP2IncrementSecondsInput(Number(e.target.value))
                         }
                         className="mt-1 w-20 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-center text-xs transition-colors focus:border-zinc-500 focus:outline-none"
                       />

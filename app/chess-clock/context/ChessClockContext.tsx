@@ -10,30 +10,37 @@ import React, {
 
 type ClockStyle = "modern" | "classic";
 
+export interface TimeControlStage {
+  moveNumber: number;
+  minutesToAdd: number;
+}
+
 interface ChessClockContextType {
   // Setup State
-  baseHoursInput: string;
-  setBaseHoursInput: (h: string) => void;
-  baseMinutesInput: string;
-  setBaseMinutesInput: (m: string) => void;
-  baseSecondsInput: string;
-  setBaseSecondsInput: (s: string) => void;
-  incrementSecondsInput: string;
-  setIncrementSecondsInput: (inc: string) => void;
-  p2HoursInput: string;
-  setP2HoursInput: (h: string) => void;
-  p2MinutesInput: string;
-  setP2MinutesInput: (m: string) => void;
-  p2SecondsInput: string;
-  setP2SecondsInput: (s: string) => void;
-  p2IncrementSecondsInput: string;
-  setP2IncrementSecondsInput: (inc: string) => void;
+  baseHoursInput: number;
+  setBaseHoursInput: (h: number) => void;
+  baseMinutesInput: number;
+  setBaseMinutesInput: (m: number) => void;
+  baseSecondsInput: number;
+  setBaseSecondsInput: (s: number) => void;
+  incrementSecondsInput: number;
+  setIncrementSecondsInput: (inc: number) => void;
+  p2HoursInput: number;
+  setP2HoursInput: (h: number) => void;
+  p2MinutesInput: number;
+  setP2MinutesInput: (m: number) => void;
+  p2SecondsInput: number;
+  setP2SecondsInput: (s: number) => void;
+  p2IncrementSecondsInput: number;
+  setP2IncrementSecondsInput: (inc: number) => void;
   isMirrored: boolean;
   setIsMirrored: (mirrored: boolean) => void;
   selectedPreset: string | null;
   setSelectedPreset: (p: string | null) => void;
   errors: { base?: string; inc?: string };
   setErrors: (e: { base?: string; inc?: string }) => void;
+  stages: TimeControlStage[];
+  setStages: (stages: TimeControlStage[]) => void;
   isSetupOpen: boolean;
   clockStyle: ClockStyle;
   setClockStyle: (style: ClockStyle) => void;
@@ -45,6 +52,7 @@ interface ChessClockContextType {
   readyPlayer: 1 | 2;
   hasPrimed: boolean;
   isGameOver: boolean;
+  firstMovePlayer: 0 | 1 | 2;
 
   timingMode: "increment" | "delay";
   setTimingMode: (mode: "increment" | "delay") => void;
@@ -70,20 +78,24 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // Setup State
-  const [baseHoursInput, setBaseHoursInput] = useState("0");
-  const [baseMinutesInput, setBaseMinutesInput] = useState("3");
-  const [baseSecondsInput, setBaseSecondsInput] = useState("0");
-  const [incrementSecondsInput, setIncrementSecondsInput] = useState("2");
+  const [baseHoursInput, setBaseHoursInput] = useState(0);
+  const [baseMinutesInput, setBaseMinutesInput] = useState(3);
+  const [baseSecondsInput, setBaseSecondsInput] = useState(0);
+  const [incrementSecondsInput, setIncrementSecondsInput] = useState(2);
 
-  const [p2HoursInput, setP2HoursInput] = useState("0");
-  const [p2MinutesInput, setP2MinutesInput] = useState("3");
-  const [p2SecondsInput, setP2SecondsInput] = useState("0");
-  const [p2IncrementSecondsInput, setP2IncrementSecondsInput] = useState("2");
+  const [p2HoursInput, setP2HoursInput] = useState(0);
+  const [p2MinutesInput, setP2MinutesInput] = useState(3);
+  const [p2SecondsInput, setP2SecondsInput] = useState(0);
+  const [p2IncrementSecondsInput, setP2IncrementSecondsInput] = useState(2);
 
   const [isMirrored, setIsMirrored] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(
     "3 mins + 2 sec/move",
   );
+  const [stages, setStages] = useState<TimeControlStage[]>([]);
+
+  const [movesPlayer1, setMovesPlayer1] = useState(0);
+  const [movesPlayer2, setMovesPlayer2] = useState(0);
 
   const [timingMode, setTimingMode] = useState<"increment" | "delay">(
     "increment",
@@ -99,6 +111,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   // Shared Config for active game (using refs for direct access in callbacks)
   const incRef1 = useRef(0);
   const incRef2 = useRef(0);
+  const stagesRef = useRef<TimeControlStage[]>([]);
   const modeRef1 = useRef<"increment" | "delay">("increment");
   const modeRef2 = useRef<"increment" | "delay">("increment");
   const isFirstMoveRef = useRef(true);
@@ -112,6 +125,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const [readyPlayer, setReadyPlayer] = useState<1 | 2>(1);
   const [hasPrimed, setHasPrimed] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [firstMovePlayer, setFirstMovePlayer] = useState<0 | 1 | 2>(0);
 
   const touchStarted = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -150,10 +164,10 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const startGame = () => {
     const newErrors: { base?: string; inc?: string } = {};
 
-    const hrs1 = parseInt(baseHoursInput) || 0;
-    const min1 = parseInt(baseMinutesInput) || 0;
-    const sec1 = parseInt(baseSecondsInput) || 0;
-    const increment1 = parseFloat(incrementSecondsInput) || 0;
+    const hrs1 = baseHoursInput;
+    const min1 = baseMinutesInput;
+    const sec1 = baseSecondsInput;
+    const increment1 = incrementSecondsInput;
 
     let hrs2 = hrs1;
     let min2 = min1;
@@ -161,10 +175,10 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     let increment2 = increment1;
 
     if (!isMirrored && selectedPreset === null) {
-      hrs2 = parseInt(p2HoursInput) || 0;
-      min2 = parseInt(p2MinutesInput) || 0;
-      sec2 = parseInt(p2SecondsInput) || 0;
-      increment2 = parseFloat(p2IncrementSecondsInput) || 0;
+      hrs2 = p2HoursInput;
+      min2 = p2MinutesInput;
+      sec2 = p2SecondsInput;
+      increment2 = p2IncrementSecondsInput;
     }
 
     const totalSecs1 = hrs1 * 3600 + min1 * 60 + sec1;
@@ -185,6 +199,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setErrors({});
     incRef1.current = increment1;
     incRef2.current = increment2;
+    stagesRef.current = stages;
     modeRef1.current = timingMode;
     modeRef2.current = isMirrored ? timingMode : p2TimingMode;
 
@@ -209,6 +224,9 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setActivePlayer(0);
     setReadyPlayer(1);
     setHasPrimed(false);
+    setFirstMovePlayer(1); // Player 1 starts as white by default
+    setMovesPlayer1(0);
+    setMovesPlayer2(0);
   };
 
   const handleInteraction = (playerNum: 1 | 2) => {
@@ -224,15 +242,43 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlayer === playerNum) {
       triggerVibration();
       if (playerNum === 1) {
+        const newMoves = movesPlayer1 + 1;
+        setMovesPlayer1(newMoves);
+
+        let addedTime = 0;
         if (modeRef1.current === "increment") {
-          setTime1((prev) => prev + incRef1.current);
+          addedTime += incRef1.current;
         }
+
+        const stage = stagesRef.current.find((s) => s.moveNumber === newMoves);
+        if (stage) {
+          addedTime += stage.minutesToAdd * 60;
+        }
+
+        if (addedTime > 0) {
+          setTime1((prev) => prev + addedTime);
+        }
+
         setCurrentDelay1(0);
         setCurrentDelay2(modeRef2.current === "delay" ? incRef2.current : 0);
       } else {
+        const newMoves = movesPlayer2 + 1;
+        setMovesPlayer2(newMoves);
+
+        let addedTime = 0;
         if (modeRef2.current === "increment") {
-          setTime2((prev) => prev + incRef2.current);
+          addedTime += incRef2.current;
         }
+
+        const stage = stagesRef.current.find((s) => s.moveNumber === newMoves);
+        if (stage) {
+          addedTime += stage.minutesToAdd * 60;
+        }
+
+        if (addedTime > 0) {
+          setTime2((prev) => prev + addedTime);
+        }
+
         setCurrentDelay2(0);
         setCurrentDelay1(modeRef1.current === "delay" ? incRef1.current : 0);
       }
@@ -242,9 +288,11 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!hasPrimed) {
         setHasPrimed(true);
         setReadyPlayer(playerNum === 1 ? 2 : 1);
+        setFirstMovePlayer(playerNum === 1 ? 2 : 1);
       } else {
         if (readyPlayer === playerNum) {
           setReadyPlayer(currentEnemy);
+          setFirstMovePlayer(currentEnemy);
         }
       }
     }
@@ -391,7 +439,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     if (seconds < 60) {
-      return `${mins}:${secs.toString().padStart(2, "0")}.${hundredths.toString().padStart(2, "0")}`;
+      return `${secs.toString().padStart(2, "0")}.${hundredths.toString().padStart(2, "0")}`;
     }
 
     if (seconds < 600) {
@@ -412,6 +460,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsSetupOpen(true);
     setActivePlayer(0);
     setIsGameOver(false);
+    setFirstMovePlayer(0);
   };
 
   const togglePause = () => {
@@ -462,6 +511,8 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         setSelectedPreset,
         errors,
         setErrors,
+        stages,
+        setStages,
         isSetupOpen,
         clockStyle,
         setClockStyle,
@@ -477,6 +528,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         readyPlayer,
         hasPrimed,
         isGameOver,
+        firstMovePlayer,
         startGame,
         resetGame,
         togglePause,
