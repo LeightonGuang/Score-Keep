@@ -17,22 +17,22 @@ export interface TimeControlStage {
 
 interface ChessClockContextType {
   // Setup State
-  baseHoursInput: string;
-  setBaseHoursInput: (h: string) => void;
-  baseMinutesInput: string;
-  setBaseMinutesInput: (m: string) => void;
-  baseSecondsInput: string;
-  setBaseSecondsInput: (s: string) => void;
-  incrementSecondsInput: string;
-  setIncrementSecondsInput: (inc: string) => void;
-  p2HoursInput: string;
-  setP2HoursInput: (h: string) => void;
-  p2MinutesInput: string;
-  setP2MinutesInput: (m: string) => void;
-  p2SecondsInput: string;
-  setP2SecondsInput: (s: string) => void;
-  p2IncrementSecondsInput: string;
-  setP2IncrementSecondsInput: (inc: string) => void;
+  baseHoursInput: number;
+  setBaseHoursInput: (h: number) => void;
+  baseMinutesInput: number;
+  setBaseMinutesInput: (m: number) => void;
+  baseSecondsInput: number;
+  setBaseSecondsInput: (s: number) => void;
+  incrementSecondsInput: number;
+  setIncrementSecondsInput: (inc: number) => void;
+  p2HoursInput: number;
+  setP2HoursInput: (h: number) => void;
+  p2MinutesInput: number;
+  setP2MinutesInput: (m: number) => void;
+  p2SecondsInput: number;
+  setP2SecondsInput: (s: number) => void;
+  p2IncrementSecondsInput: number;
+  setP2IncrementSecondsInput: (inc: number) => void;
   isMirrored: boolean;
   setIsMirrored: (mirrored: boolean) => void;
   selectedPreset: string | null;
@@ -78,15 +78,15 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // Setup State
-  const [baseHoursInput, setBaseHoursInput] = useState("0");
-  const [baseMinutesInput, setBaseMinutesInput] = useState("3");
-  const [baseSecondsInput, setBaseSecondsInput] = useState("0");
-  const [incrementSecondsInput, setIncrementSecondsInput] = useState("2");
+  const [baseHoursInput, setBaseHoursInput] = useState(0);
+  const [baseMinutesInput, setBaseMinutesInput] = useState(3);
+  const [baseSecondsInput, setBaseSecondsInput] = useState(0);
+  const [incrementSecondsInput, setIncrementSecondsInput] = useState(2);
 
-  const [p2HoursInput, setP2HoursInput] = useState("0");
-  const [p2MinutesInput, setP2MinutesInput] = useState("3");
-  const [p2SecondsInput, setP2SecondsInput] = useState("0");
-  const [p2IncrementSecondsInput, setP2IncrementSecondsInput] = useState("2");
+  const [p2HoursInput, setP2HoursInput] = useState(0);
+  const [p2MinutesInput, setP2MinutesInput] = useState(3);
+  const [p2SecondsInput, setP2SecondsInput] = useState(0);
+  const [p2IncrementSecondsInput, setP2IncrementSecondsInput] = useState(2);
 
   const [isMirrored, setIsMirrored] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(
@@ -164,10 +164,10 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
   const startGame = () => {
     const newErrors: { base?: string; inc?: string } = {};
 
-    const hrs1 = parseInt(baseHoursInput) || 0;
-    const min1 = parseInt(baseMinutesInput) || 0;
-    const sec1 = parseInt(baseSecondsInput) || 0;
-    const increment1 = parseFloat(incrementSecondsInput) || 0;
+    const hrs1 = baseHoursInput;
+    const min1 = baseMinutesInput;
+    const sec1 = baseSecondsInput;
+    const increment1 = incrementSecondsInput;
 
     let hrs2 = hrs1;
     let min2 = min1;
@@ -175,10 +175,10 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     let increment2 = increment1;
 
     if (!isMirrored && selectedPreset === null) {
-      hrs2 = parseInt(p2HoursInput) || 0;
-      min2 = parseInt(p2MinutesInput) || 0;
-      sec2 = parseInt(p2SecondsInput) || 0;
-      increment2 = parseFloat(p2IncrementSecondsInput) || 0;
+      hrs2 = p2HoursInput;
+      min2 = p2MinutesInput;
+      sec2 = p2SecondsInput;
+      increment2 = p2IncrementSecondsInput;
     }
 
     const totalSecs1 = hrs1 * 3600 + min1 * 60 + sec1;
