@@ -68,6 +68,8 @@ interface ChessClockContextType {
   handleTouchStart: (e: React.TouchEvent, playerNum: 1 | 2) => void;
   handleMouseDown: (e: React.MouseEvent, playerNum: 1 | 2) => void;
   formatTime: (seconds: number) => string;
+  movesPlayer1: number;
+  movesPlayer2: number;
 }
 
 const ChessClockContext = createContext<ChessClockContextType | undefined>(
@@ -174,7 +176,7 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
     let sec2 = sec1;
     let increment2 = increment1;
 
-    if (!isMirrored && selectedPreset === null) {
+    if (!isMirrored) {
       hrs2 = p2HoursInput;
       min2 = p2MinutesInput;
       sec2 = p2SecondsInput;
@@ -285,14 +287,30 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
       setActivePlayer(currentEnemy);
     } else if (activePlayer === 0) {
       triggerVibration();
+      let nextPlayer: 1 | 2 | undefined;
+
       if (!hasPrimed) {
         setHasPrimed(true);
-        setReadyPlayer(playerNum === 1 ? 2 : 1);
-        setFirstMovePlayer(playerNum === 1 ? 2 : 1);
+        nextPlayer = playerNum === 1 ? 2 : 1;
+        setReadyPlayer(nextPlayer);
+        setFirstMovePlayer(nextPlayer);
       } else {
         if (readyPlayer === playerNum) {
-          setReadyPlayer(currentEnemy);
-          setFirstMovePlayer(currentEnemy);
+          nextPlayer = currentEnemy;
+          setReadyPlayer(nextPlayer);
+          setFirstMovePlayer(nextPlayer);
+        }
+      }
+
+      if (nextPlayer && selectedPreset === "Armageddon (5m vs 4m)") {
+        if (nextPlayer === 1) {
+          // Player 1 is White (5 mins), Player 2 is Black (4 mins)
+          setTime1(300);
+          setTime2(240);
+        } else {
+          // Player 2 is White (5 mins), Player 1 is Black (4 mins)
+          setTime1(240);
+          setTime2(300);
         }
       }
     }
@@ -535,6 +553,8 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         handleTouchStart,
         handleMouseDown,
         formatTime,
+        movesPlayer1,
+        movesPlayer2,
       }}
     >
       {children}

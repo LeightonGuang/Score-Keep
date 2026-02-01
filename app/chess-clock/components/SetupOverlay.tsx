@@ -3,12 +3,28 @@ import { useChessClock, TimeControlStage } from "../context/ChessClockContext";
 
 const PRESETS: {
   label: string;
-  h: number;
-  m: number;
-  s: number;
-  inc: number;
+  // Common/Mirrored settings
+  h?: number;
+  m?: number;
+  s?: number;
+  inc?: number;
   mode?: "increment" | "delay";
   stages?: TimeControlStage[];
+
+  p1?: {
+    h: number;
+    m: number;
+    s: number;
+    inc: number;
+    mode?: "increment" | "delay";
+  };
+  p2?: {
+    h: number;
+    m: number;
+    s: number;
+    inc: number;
+    mode?: "increment" | "delay";
+  };
 }[] = [
   { label: "3 mins", h: 0, m: 3, s: 0, inc: 0 },
   { label: "5 mins", h: 0, m: 5, s: 0, inc: 0 },
@@ -16,6 +32,11 @@ const PRESETS: {
   { label: "25 mins", h: 0, m: 25, s: 0, inc: 0 },
   { label: "30 mins", h: 0, m: 30, s: 0, inc: 0 },
   { label: "60 mins", h: 1, m: 0, s: 0, inc: 0 },
+  {
+    label: "Armageddon: 5 mins White, 4 mins Black",
+    p1: { h: 0, m: 5, s: 0, inc: 0 },
+    p2: { h: 0, m: 4, s: 0, inc: 0 },
+  },
   {
     label: "1 min + 1 sec/move",
     h: 0,
@@ -168,13 +189,37 @@ export const SetupOverlay: React.FC = () => {
 
   const handlePresetSelect = (p: (typeof PRESETS)[0]) => {
     setSelectedPreset(p.label);
-    setBaseHoursInput(p.h);
-    setBaseMinutesInput(p.m);
-    setBaseSecondsInput(p.s);
-    setIncrementSecondsInput(p.inc);
-    setTimingMode(p.mode as "increment" | "delay");
+
+    if (p.p1 && p.p2) {
+      // Split configuration
+      setIsMirrored(false);
+
+      // Player 1
+      setBaseHoursInput(p.p1.h);
+      setBaseMinutesInput(p.p1.m);
+      setBaseSecondsInput(p.p1.s);
+      setIncrementSecondsInput(p.p1.inc);
+      setTimingMode(p.p1.mode || "increment");
+
+      // Player 2
+      setP2HoursInput(p.p2.h);
+      setP2MinutesInput(p.p2.m);
+      setP2SecondsInput(p.p2.s);
+      setP2IncrementSecondsInput(p.p2.inc);
+      setP2TimingMode(p.p2.mode || "increment");
+    } else {
+      // Mirrored configuration
+      // We know these exist for non-split presets based on type usage, but TS might check optionality.
+      // We fallback to 0 safely.
+      setBaseHoursInput(p.h ?? 0);
+      setBaseMinutesInput(p.m ?? 0);
+      setBaseSecondsInput(p.s ?? 0);
+      setIncrementSecondsInput(p.inc ?? 0);
+      setTimingMode(p.mode as "increment" | "delay");
+      setIsMirrored(true); // Presets without p1/p2 are mirrored
+    }
+
     setStages(p.stages || []);
-    setIsMirrored(true); // Presets are always mirrored
     setErrors({});
   };
 
