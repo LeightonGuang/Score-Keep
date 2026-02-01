@@ -302,7 +302,10 @@ export const ChessClockProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
 
-      if (nextPlayer && selectedPreset === "Armageddon (5m vs 4m)") {
+      if (
+        nextPlayer &&
+        selectedPreset === "Armageddon: 5 mins White, 4 mins Black"
+      ) {
         if (nextPlayer === 1) {
           // Player 1 is White (5 mins), Player 2 is Black (4 mins)
           setTime1(300);
