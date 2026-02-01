@@ -15,7 +15,12 @@ export const ModernClock: React.FC = () => {
     formatTime,
     resetGame: onReset,
     togglePause: onPause,
+    movesPlayer1,
+    movesPlayer2,
   } = useChessClock();
+
+  const isMidGamePause =
+    activePlayer === 0 && hasPrimed && (movesPlayer1 > 0 || movesPlayer2 > 0);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-zinc-950">
@@ -26,9 +31,8 @@ export const ModernClock: React.FC = () => {
           onMouseDown={(e) => handleMouseDown(e, 1)}
           disabled={
             isGameOver ||
-            (activePlayer === 0 && hasPrimed
-              ? readyPlayer !== 1
-              : activePlayer !== 1)
+            isMidGamePause ||
+            (activePlayer !== 0 && activePlayer !== 1)
           }
           className={`flex w-full flex-1 rotate-180 flex-col items-center justify-center transition-all duration-300 ${activePlayer === 1 || (activePlayer === 0 && readyPlayer === 1) ? "bg-white text-zinc-900" : "bg-zinc-900 text-zinc-500"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 1 ? "animate-pulse" : ""} ${isGameOver && time1 === 0 ? "bg-red-600 text-white" : ""} ${!isGameOver && activePlayer === 1 ? "shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]" : ""} `}
         >
@@ -71,9 +75,8 @@ export const ModernClock: React.FC = () => {
           onMouseDown={(e) => handleMouseDown(e, 2)}
           disabled={
             isGameOver ||
-            (activePlayer === 0 && hasPrimed
-              ? readyPlayer !== 2
-              : activePlayer !== 2)
+            isMidGamePause ||
+            (activePlayer !== 0 && activePlayer !== 2)
           }
           className={`flex w-full flex-1 flex-col items-center justify-center transition-all duration-300 ${activePlayer === 2 || (activePlayer === 0 && readyPlayer === 2) ? "bg-white text-zinc-900" : "bg-zinc-900 text-zinc-500"} ${activePlayer === 0 && !hasPrimed && readyPlayer === 2 ? "animate-pulse" : ""} ${isGameOver && time2 === 0 ? "bg-red-600 text-white" : ""} ${!isGameOver && activePlayer === 2 ? "shadow-[inset_0_0_100px_rgba(0,0,0,0.1)]" : ""} `}
         >

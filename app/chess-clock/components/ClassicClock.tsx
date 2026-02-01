@@ -13,9 +13,14 @@ export const ClassicClock: React.FC = () => {
     resetGame: onReset,
     togglePause: onPause,
     selectedPreset,
+    movesPlayer1,
+    movesPlayer2,
   } = useChessClock();
 
   const [isFlipped, setIsFlipped] = useState(false);
+
+  const isMidGamePause =
+    activePlayer === 0 && hasPrimed && (movesPlayer1 > 0 || movesPlayer2 > 0);
 
   return (
     <div className="fixed inset-0 z-0 flex items-center justify-center overflow-hidden bg-zinc-950 font-sans">
@@ -71,15 +76,13 @@ export const ClassicClock: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, 1)}
                 disabled={
                   isGameOver ||
-                  (activePlayer !== 0
-                    ? activePlayer !== 1
-                    : hasPrimed && readyPlayer !== 1)
+                  isMidGamePause ||
+                  (activePlayer !== 0 && activePlayer !== 1)
                 }
                 className={`absolute inset-0 z-10 h-full w-full ${
                   isGameOver ||
-                  (activePlayer !== 0
-                    ? activePlayer !== 1
-                    : hasPrimed && readyPlayer !== 1)
+                  isMidGamePause ||
+                  (activePlayer !== 0 && activePlayer !== 1)
                     ? "pointer-events-none"
                     : "cursor-pointer"
                 }`}
@@ -121,15 +124,13 @@ export const ClassicClock: React.FC = () => {
                 onMouseDown={(e) => handleMouseDown(e, 2)}
                 disabled={
                   isGameOver ||
-                  (activePlayer !== 0
-                    ? activePlayer !== 2
-                    : hasPrimed && readyPlayer !== 2)
+                  isMidGamePause ||
+                  (activePlayer !== 0 && activePlayer !== 2)
                 }
                 className={`absolute inset-0 z-10 h-full w-full ${
                   isGameOver ||
-                  (activePlayer !== 0
-                    ? activePlayer !== 2
-                    : hasPrimed && readyPlayer !== 2)
+                  isMidGamePause ||
+                  (activePlayer !== 0 && activePlayer !== 2)
                     ? "pointer-events-none"
                     : "cursor-pointer"
                 }`}
