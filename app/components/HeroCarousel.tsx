@@ -15,18 +15,18 @@ interface Game {
   icon: React.ReactNode;
 }
 
-export default function HeroCarousel({ games }: { games: Game[] }) {
+const HeroCarousel = ({ games }: { games: Game[] }) => {
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCarouselIndex((prev) => (prev + 1) % games.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(timer);
-  }, [games.length]);
+  }, [games.length, carouselIndex]);
 
   return (
-    <div className="relative mb-8 h-[400px] w-full overflow-hidden rounded-4xl border border-zinc-500/10 bg-white shadow-xl transition-all dark:bg-zinc-900/50 dark:shadow-none">
+    <div className="relative mb-8 h-100 w-full overflow-hidden rounded-4xl border border-zinc-500/10 bg-white shadow-xl transition-all dark:bg-zinc-900/50 dark:shadow-none">
       <AnimatePresence mode="wait">
         <motion.div
           key={carouselIndex}
@@ -61,7 +61,7 @@ export default function HeroCarousel({ games }: { games: Game[] }) {
               }`}
             >
               {games[carouselIndex].status === "active"
-                ? "Launch Tracker"
+                ? "Launch"
                 : "Coming Soon"}
               <svg
                 viewBox="0 0 24 24"
@@ -75,12 +75,12 @@ export default function HeroCarousel({ games }: { games: Game[] }) {
             </Link>
           </div>
 
-          <div className="flex gap-2">
+          <div className="mt-8 flex gap-2">
             {games.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCarouselIndex(i)}
-                className={`h-1 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all hover:w-4 hover:cursor-pointer hover:bg-white ${
                   i === carouselIndex
                     ? `w-8 ${games[i].theme}`
                     : "w-2 bg-zinc-500/20"
@@ -96,4 +96,6 @@ export default function HeroCarousel({ games }: { games: Game[] }) {
       </div>
     </div>
   );
-}
+};
+
+export default HeroCarousel;
