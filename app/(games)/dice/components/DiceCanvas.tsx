@@ -1,85 +1,41 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Physics, RigidBody, RapierRigidBody } from "@react-three/rapier";
-import { OrbitControls, RoundedBox } from "@react-three/drei";
-import { useMemo, useRef, useEffect, useState } from "react";
+import { Physics, RigidBody } from "@react-three/rapier";
+import { OrbitControls } from "@react-three/drei";
+import { useRef } from "react";
+import { Dice, DiceHandle } from "./Dice";
 
 const DiceCanvas = () => {
-  const diceRef = useRef<RapierRigidBody>(null);
-
-  const generateRandomRotation = (): [number, number, number] => [
-    Math.random() * Math.PI * 2,
-    Math.random() * Math.PI * 2,
-    Math.random() * Math.PI * 2,
-  ];
-
-  const generateRandomTorque = () => ({
-    x: Math.random() * 0.1,
-    y: Math.random() * 0.1,
-    z: Math.random() * 0.1,
-  });
-
-  const [diceRotation, setDiceRotation] = useState<[number, number, number]>(
-    generateRandomRotation(),
-  );
-
-  // Initial roll
-  useEffect(() => {
-    if (diceRef.current) {
-      diceRef.current.applyTorqueImpulse(generateRandomTorque(), true);
-    }
-  }, []);
+  const dice1Ref = useRef<DiceHandle>(null);
+  const dice2Ref = useRef<DiceHandle>(null);
 
   const rerollDice = () => {
-    if (!diceRef.current) return;
-
-    // Reset position and rotation
-    diceRef.current.setTranslation({ x: 0, y: 5, z: 0 }, true);
-    const newRotation = generateRandomRotation();
-    diceRef.current.setRotation(
-      { x: newRotation[0], y: newRotation[1], z: newRotation[2], w: 1 },
-      true,
-    );
-
-    // Apply new torque
-    diceRef.current.applyTorqueImpulse(generateRandomTorque(), true);
-
-    // Update state (optional, useful if you want to trigger re-render)
-    setDiceRotation(newRotation);
+    if (dice1Ref.current) {
+      dice1Ref.current.reroll();
+    }
+    if (dice2Ref.current) {
+      dice2Ref.current.reroll();
+    }
   };
 
-  const WALL_HEIGHT = 1;
+  const WALL_HEIGHT = 4;
   const WALL_THICKNESS = 0.2;
   const SIZE = 10;
+  const WALL_COLOR = "green";
+  const WALL_OPACITY = 0;
 
   return (
     <>
       <Canvas camera={{ position: [5, 5, 5], fov: 50 }}>
-        <color attach="background" args={["#ffffff"]} />
+        <color attach="background" args={["#111111"]} />
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
 
-        <Physics gravity={[0, -9.81, 0]}>
+        <Physics gravity={[0, -30, 0]}>
           {/* Dice */}
-          <RigidBody
-            ref={diceRef}
-            position={[0, 5, 0]}
-            rotation={diceRotation}
-            colliders="cuboid"
-            restitution={0.5}
-            friction={0.2}
-            mass={1}
-          >
-            <RoundedBox
-              args={[1, 1, 1]}
-              radius={0.05}
-              smoothness={4}
-              castShadow
-            >
-              <meshStandardMaterial color="white" />
-            </RoundedBox>
-          </RigidBody>
+          <Dice ref={dice1Ref} position={[0, 3, 0]} />
+          <Dice ref={dice2Ref} position={[2, 3, 0]} />
 
           {/* Ground */}
           <RigidBody type="fixed" colliders="cuboid" restitution={0.3}>
@@ -91,21 +47,37 @@ const DiceCanvas = () => {
 
           {/* Walls */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[0, -WALL_HEIGHT / 4, SIZE / 2]}>
+            <mesh position={[0, WALL_HEIGHT / 3, SIZE / 2]}>
               <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
-              <meshStandardMaterial color="green" />
+              <meshStandardMaterial
+                color={WALL_COLOR}
+                transparent
+                opacity={WALL_OPACITY}
+              />
             </mesh>
-            <mesh position={[0, -WALL_HEIGHT / 4, -SIZE / 2]}>
+            <mesh position={[0, WALL_HEIGHT / 3, -SIZE / 2]}>
               <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
-              <meshStandardMaterial color="green" />
+              <meshStandardMaterial
+                color={WALL_COLOR}
+                transparent
+                opacity={WALL_OPACITY}
+              />
             </mesh>
-            <mesh position={[SIZE / 2, -WALL_HEIGHT / 4, 0]}>
+            <mesh position={[SIZE / 2, WALL_HEIGHT / 3, 0]}>
               <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
-              <meshStandardMaterial color="green" />
+              <meshStandardMaterial
+                color={WALL_COLOR}
+                transparent
+                opacity={WALL_OPACITY}
+              />
             </mesh>
-            <mesh position={[-SIZE / 2, -WALL_HEIGHT / 4, 0]}>
+            <mesh position={[-SIZE / 2, WALL_HEIGHT / 3, 0]}>
               <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
-              <meshStandardMaterial color="green" />
+              <meshStandardMaterial
+                color={WALL_COLOR}
+                transparent
+                opacity={WALL_OPACITY}
+              />
             </mesh>
           </RigidBody>
         </Physics>
