@@ -4,7 +4,8 @@ export const GAMES = [
     title: "Chess Clock",
     tagline: "Masters of Time",
     description:
-      "High-precision mechanical and digital timers for competitive play.",
+      // "Chess Clock offers all major time controls, including classical, rapid, blitz, armageddon, and customizable increments and delays, with lever buttons and a digital LCD screen for time display, mimicking the look and feel of a real chess clock.",
+      "Keep track of every time control, increment, and delay with precision.",
     href: "/chess-clock",
     status: "active",
     theme: "bg-red-500",
