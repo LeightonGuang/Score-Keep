@@ -27,21 +27,21 @@ const DiceCanvas = () => {
 
   return (
     <>
-      <Canvas camera={{ position: [5, 5, 5], fov: 50 }}>
+      <Canvas camera={{ position: [5, 15, 5], fov: 50 }}>
         <color attach="background" args={["#111111"]} />
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
 
         <Physics gravity={[0, -30, 0]}>
           {/* Dice */}
-          <Dice ref={dice1Ref} position={[0, 3, 0]} />
-          <Dice ref={dice2Ref} position={[2, 3, 0]} />
+          <Dice ref={dice1Ref} position={[0, 3, 0]} DICE_COLOR="#FFFFFF" />
+          <Dice ref={dice2Ref} position={[2, 3, 0]} DICE_COLOR="#FFFFFF" />
 
           {/* Ground */}
           <RigidBody type="fixed" colliders="cuboid" restitution={0.3}>
             <mesh receiveShadow position={[0, -0.5, 0]}>
               <boxGeometry args={[SIZE, 0.1, SIZE]} />
-              <meshStandardMaterial color="green" />
+              <meshStandardMaterial color={WALL_COLOR} />
             </mesh>
           </RigidBody>
 
@@ -88,7 +88,7 @@ const DiceCanvas = () => {
       {/* Reroll button */}
       <button
         onClick={rerollDice}
-        className="absolute top-2 left-2 rounded-md bg-black px-4 py-2 hover:cursor-pointer"
+        className="absolute bottom-2 left-2 rounded-md bg-black px-4 py-2 hover:cursor-pointer"
       >
         Reroll Dice
       </button>
