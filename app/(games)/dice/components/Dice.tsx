@@ -17,11 +17,10 @@ export interface DiceHandle {
 interface DiceProps {
   position?: [number, number, number];
   DICE_COLOR?: string;
-  DICE_OPACITY?: number;
 }
 
 export const Dice = forwardRef<DiceHandle, DiceProps>(
-  ({ position = [0, 3, 0], DICE_COLOR = "#FFFFFF", DICE_OPACITY = 1 }, ref) => {
+  ({ position = [0, 3, 0], DICE_COLOR = "#FFFFFF" }, ref) => {
     const DICE_RADIUS = 0.1;
 
     const rigidBodyRef = useRef<RapierRigidBody>(null);
@@ -155,12 +154,7 @@ export const Dice = forwardRef<DiceHandle, DiceProps>(
           smoothness={4}
           castShadow
         >
-          <meshStandardMaterial
-            color={DICE_COLOR}
-            roughness={0.2}
-            transparent
-            opacity={DICE_OPACITY}
-          />
+          <meshStandardMaterial color={DICE_COLOR} roughness={0.2} />
         </RoundedBox>
 
         {/* Face 1 (Front +Z) */}
