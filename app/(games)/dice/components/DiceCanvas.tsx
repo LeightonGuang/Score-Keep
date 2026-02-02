@@ -5,6 +5,7 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import { OrbitControls } from "@react-three/drei";
 import { useRef } from "react";
 import { Dice, DiceHandle } from "./Dice";
+import { redirect } from "next/navigation";
 
 const DiceCanvas = () => {
   const dice1Ref = useRef<DiceHandle>(null);
@@ -30,7 +31,7 @@ const DiceCanvas = () => {
       <Canvas camera={{ position: [5, 15, 5], fov: 50 }}>
         <color attach="background" args={["#111111"]} />
         <ambientLight intensity={1} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <directionalLight position={[10, 10, 5]} color="white" intensity={1} />
 
         <Physics gravity={[0, -30, 0]}>
           {/* Dice */}
@@ -86,12 +87,34 @@ const DiceCanvas = () => {
       </Canvas>
 
       {/* Reroll button */}
-      <button
-        onClick={rerollDice}
-        className="absolute bottom-2 left-2 rounded-md bg-black px-4 py-2 hover:cursor-pointer"
-      >
-        Reroll Dice
-      </button>
+      <div className="absolute bottom-2 mx-4 flex w-max gap-4 rounded-lg bg-black/50 p-2">
+        <button
+          onClick={rerollDice}
+          className="rounded-md bg-zinc-900 px-6 py-2 select-none hover:cursor-pointer active:scale-95"
+        >
+          Roll
+        </button>
+
+        <button
+          onClick={() => {
+            redirect("/");
+          }}
+          className="rounded-md bg-zinc-900 px-4 py-2 hover:cursor-pointer"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        </button>
+      </div>
     </>
   );
 };
