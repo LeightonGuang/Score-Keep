@@ -99,7 +99,7 @@ const DiceCanvas = () => {
           onClick={() => {
             redirect("/");
           }}
-          className="rounded-md bg-zinc-900 px-4 py-2 hover:cursor-pointer"
+          className="rounded-md bg-zinc-900 px-4 py-2 hover:cursor-pointer active:scale-95"
         >
           <svg
             viewBox="0 0 24 24"
