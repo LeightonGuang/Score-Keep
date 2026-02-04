@@ -86,7 +86,9 @@ const DiceCanvas = () => {
           {Array.from({ length: diceCount }).map((_, i) => (
             <CurrentDice
               key={`${diceSides}-${i}`}
-              ref={(el) => (diceRefs.current[i] = el)}
+              ref={(el) => {
+                diceRefs.current[i] = el;
+              }}
               position={[
                 (Math.random() - 0.5) * 3,
                 3 + i * 1.5,
@@ -115,13 +117,7 @@ const DiceCanvas = () => {
 
           {/* FRONT */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh
-              position={[
-                0,
-                TRAY_HEIGHT / 2,
-                HALF_INNER + HALF_THICKNESS,
-              ]}
-            >
+            <mesh position={[0, TRAY_HEIGHT / 2, HALF_INNER + HALF_THICKNESS]}>
               <boxGeometry
                 args={[
                   INNER_SIZE + WALL_THICKNESS * 2,
@@ -135,13 +131,7 @@ const DiceCanvas = () => {
 
           {/* BACK */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh
-              position={[
-                0,
-                TRAY_HEIGHT / 2,
-                -HALF_INNER - HALF_THICKNESS,
-              ]}
-            >
+            <mesh position={[0, TRAY_HEIGHT / 2, -HALF_INNER - HALF_THICKNESS]}>
               <boxGeometry
                 args={[
                   INNER_SIZE + WALL_THICKNESS * 2,
@@ -155,32 +145,16 @@ const DiceCanvas = () => {
 
           {/* RIGHT */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh
-              position={[
-                HALF_INNER + HALF_THICKNESS,
-                TRAY_HEIGHT / 2,
-                0,
-              ]}
-            >
-              <boxGeometry
-                args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]}
-              />
+            <mesh position={[HALF_INNER + HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
+              <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
               <meshStandardMaterial color={WALL_COLOUR} />
             </mesh>
           </RigidBody>
 
           {/* LEFT */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh
-              position={[
-                -HALF_INNER - HALF_THICKNESS,
-                TRAY_HEIGHT / 2,
-                0,
-              ]}
-            >
-              <boxGeometry
-                args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]}
-              />
+            <mesh position={[-HALF_INNER - HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
+              <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
               <meshStandardMaterial color={WALL_COLOUR} />
             </mesh>
           </RigidBody>
@@ -196,9 +170,7 @@ const DiceCanvas = () => {
               <mesh position={pos as [number, number, number]}>
                 <boxGeometry
                   args={[
-                    i < 2
-                      ? INNER_SIZE + WALL_THICKNESS * 2
-                      : WALL_THICKNESS,
+                    i < 2 ? INNER_SIZE + WALL_THICKNESS * 2 : WALL_THICKNESS,
                     0.5,
                     i < 2 ? WALL_THICKNESS : INNER_SIZE,
                   ]}
