@@ -59,7 +59,7 @@ const DiceCanvas = () => {
 
   return (
     <>
-      <Canvas shadows camera={{ position: [5, 15, 5], fov: 50 }}>
+      <Canvas shadows camera={{ position: [10, 15, 0], fov: 50 }}>
         <color attach="background" args={["#050505"]} />
         <ambientLight intensity={0.15} />
 
