@@ -17,15 +17,12 @@ const DiceCanvas = () => {
   const [diceSides, setDiceSides] = useState<4 | 6 | 8 | 10 | 12 | 20>(6);
   const diceRefs = useRef<(DiceHandle | null)[]>([]);
 
-  // Reset refs when count changes
   useEffect(() => {
     diceRefs.current = diceRefs.current.slice(0, diceCount);
   }, [diceCount]);
 
   const rerollDice = () => {
-    diceRefs.current.forEach((dice) => {
-      if (dice) dice.reroll();
-    });
+    diceRefs.current.forEach((dice) => dice?.reroll());
   };
 
   const getDiceComponent = (sides: number) => {
@@ -40,7 +37,6 @@ const DiceCanvas = () => {
         return D12Dice;
       case 20:
         return D20Dice;
-      case 6:
       default:
         return D6Dice;
     }
@@ -48,12 +44,18 @@ const DiceCanvas = () => {
 
   const CurrentDice = getDiceComponent(diceSides);
 
-  const WALL_HEIGHT = 1.5;
+  /* ================= TRAY GEOMETRY ================= */
+
+  const INNER_SIZE = 8;
   const WALL_THICKNESS = 0.4;
-  const SIZE = 10;
+  const TRAY_HEIGHT = 1.5;
+  const LID_Y = 3.5;
+
+  const HALF_INNER = INNER_SIZE / 2;
+  const HALF_THICKNESS = WALL_THICKNESS / 2;
+
   const GROUND_COLOUR = "green";
   const WALL_COLOUR = "#b67544";
-  const WALL_OPACITY = 1;
 
   return (
     <>
@@ -80,80 +82,144 @@ const DiceCanvas = () => {
         />
 
         <Physics gravity={[0, -30, 0]}>
+          {/* Dice */}
           {Array.from({ length: diceCount }).map((_, i) => (
             <CurrentDice
-              key={`${diceSides}-${i}`} // Force re-mount on type change
-              ref={(el) => {
-                diceRefs.current[i] = el;
-              }}
+              key={`${diceSides}-${i}`}
+              ref={(el) => (diceRefs.current[i] = el)}
               position={[
-                (Math.random() - 0.5) * 3, // Increased spread
-                3 + i * 1.5, // Increased vertical spacing to prevent clipping
+                (Math.random() - 0.5) * 3,
+                3 + i * 1.5,
                 (Math.random() - 0.5) * 3,
               ]}
               DICE_COLOR="#FFFFFF"
             />
           ))}
 
-          <RigidBody type="fixed" colliders="cuboid" restitution={0.3}>
-            <mesh receiveShadow position={[0, -0.5, 0]}>
-              <boxGeometry args={[SIZE, 0.1, SIZE]} />
+          {/* Ground */}
+          <RigidBody
+            type="fixed"
+            colliders="cuboid"
+            restitution={0.1}
+            friction={0.9}
+          >
+            <mesh receiveShadow position={[0, -0.05, 0]}>
+              <boxGeometry args={[INNER_SIZE, 0.1, INNER_SIZE]} />
               <meshStandardMaterial
                 color={GROUND_COLOUR}
-                roughness={0.75}
-                metalness={0.1}
+                roughness={0.8}
+                metalness={0.05}
               />
             </mesh>
           </RigidBody>
 
+          {/* FRONT */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[0, -WALL_HEIGHT / 8, SIZE / 2]}>
-              <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
-              <meshStandardMaterial
-                color={WALL_COLOUR}
-                transparent
-                opacity={WALL_OPACITY}
+            <mesh
+              position={[
+                0,
+                TRAY_HEIGHT / 2,
+                HALF_INNER + HALF_THICKNESS,
+              ]}
+            >
+              <boxGeometry
+                args={[
+                  INNER_SIZE + WALL_THICKNESS * 2,
+                  TRAY_HEIGHT,
+                  WALL_THICKNESS,
+                ]}
               />
-            </mesh>
-            <mesh position={[0, -WALL_HEIGHT / 8, -SIZE / 2]}>
-              <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
-              <meshStandardMaterial
-                color={WALL_COLOUR}
-                transparent
-                opacity={WALL_OPACITY}
-              />
-            </mesh>
-            <mesh position={[SIZE / 2, -WALL_HEIGHT / 8, 0]}>
-              <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
-              <meshStandardMaterial
-                color={WALL_COLOUR}
-                transparent
-                opacity={WALL_OPACITY}
-              />
-            </mesh>
-            <mesh position={[-SIZE / 2, -WALL_HEIGHT / 8, 0]}>
-              <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
-              <meshStandardMaterial
-                color={WALL_COLOUR}
-                transparent
-                opacity={WALL_OPACITY}
-              />
+              <meshStandardMaterial color={WALL_COLOUR} />
             </mesh>
           </RigidBody>
+
+          {/* BACK */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh
+              position={[
+                0,
+                TRAY_HEIGHT / 2,
+                -HALF_INNER - HALF_THICKNESS,
+              ]}
+            >
+              <boxGeometry
+                args={[
+                  INNER_SIZE + WALL_THICKNESS * 2,
+                  TRAY_HEIGHT,
+                  WALL_THICKNESS,
+                ]}
+              />
+              <meshStandardMaterial color={WALL_COLOUR} />
+            </mesh>
+          </RigidBody>
+
+          {/* RIGHT */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh
+              position={[
+                HALF_INNER + HALF_THICKNESS,
+                TRAY_HEIGHT / 2,
+                0,
+              ]}
+            >
+              <boxGeometry
+                args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]}
+              />
+              <meshStandardMaterial color={WALL_COLOUR} />
+            </mesh>
+          </RigidBody>
+
+          {/* LEFT */}
+          <RigidBody type="fixed" colliders="cuboid">
+            <mesh
+              position={[
+                -HALF_INNER - HALF_THICKNESS,
+                TRAY_HEIGHT / 2,
+                0,
+              ]}
+            >
+              <boxGeometry
+                args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]}
+              />
+              <meshStandardMaterial color={WALL_COLOUR} />
+            </mesh>
+          </RigidBody>
+
+          {/* INVISIBLE TOP BOUNDS */}
+          {[
+            [0, LID_Y, HALF_INNER + HALF_THICKNESS],
+            [0, LID_Y, -HALF_INNER - HALF_THICKNESS],
+            [HALF_INNER + HALF_THICKNESS, LID_Y, 0],
+            [-HALF_INNER - HALF_THICKNESS, LID_Y, 0],
+          ].map((pos, i) => (
+            <RigidBody key={i} type="fixed" colliders="cuboid">
+              <mesh position={pos as [number, number, number]}>
+                <boxGeometry
+                  args={[
+                    i < 2
+                      ? INNER_SIZE + WALL_THICKNESS * 2
+                      : WALL_THICKNESS,
+                    0.5,
+                    i < 2 ? WALL_THICKNESS : INNER_SIZE,
+                  ]}
+                />
+                <meshStandardMaterial transparent opacity={0} />
+              </mesh>
+            </RigidBody>
+          ))}
         </Physics>
 
         <OrbitControls />
       </Canvas>
 
-      {/* Controls Overlay */}
+      {/* Controls */}
       <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 rounded-lg bg-black/50 p-3 backdrop-blur-sm sm:flex-row">
-        {/* Dice Count Selector */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-white uppercase">Count</span>
           <select
             value={diceCount}
             onChange={(e) => setDiceCount(Number(e.target.value))}
-            className="cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-white focus:outline-none"
+            className="rounded bg-zinc-900 px-2 py-1 text-white"
           >
             {[...Array(10)].map((_, i) => (
               <option key={i + 1} value={i + 1}>
@@ -163,49 +229,33 @@ const DiceCanvas = () => {
           </select>
         </div>
 
-        {/* Dice Type Selector */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-white uppercase">Type</span>
           <select
             value={diceSides}
             onChange={(e) => setDiceSides(Number(e.target.value) as any)}
-            className="cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-white focus:outline-none"
+            className="rounded bg-zinc-900 px-2 py-1 text-white"
           >
-            {[4, 6, 8, 10, 12, 20].map((sides) => (
-              <option key={sides} value={sides}>
-                D{sides}
+            {[4, 6, 8, 10, 12, 20].map((s) => (
+              <option key={s} value={s}>
+                D{s}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="mx-2 hidden h-6 w-px bg-zinc-700 sm:block"></div>
-
         <button
           onClick={rerollDice}
-          className="w-full rounded-md bg-white px-6 py-2 font-bold text-black transition-transform hover:cursor-pointer active:scale-95 sm:w-auto"
+          className="rounded bg-white px-6 py-2 font-bold text-black"
         >
           ROLL
         </button>
 
         <button
           onClick={() => redirect("/")}
-          className="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-800 text-white transition-colors hover:bg-zinc-700 active:scale-95"
-          title="Exit"
+          className="flex h-9 w-9 items-center justify-center rounded bg-zinc-800 text-white"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="m15 9-6 6" />
-            <path d="m9 9 6 6" />
-          </svg>
+          ✕
         </button>
       </div>
     </>
