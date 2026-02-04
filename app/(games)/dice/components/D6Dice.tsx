@@ -9,6 +9,7 @@ import {
 } from "react";
 import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import { RoundedBox } from "@react-three/drei";
+import * as THREE from "three";
 
 export interface DiceHandle {
   reroll: () => void;
@@ -60,9 +61,16 @@ export const D6Dice = forwardRef<DiceHandle, DiceProps>(
         rigidBodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
         rigidBodyRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
 
-        const newRotation = generateRandomRotation();
+        const euler = new THREE.Euler(
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2,
+        );
+
+        const quat = new THREE.Quaternion().setFromEuler(euler);
+
         rigidBodyRef.current.setRotation(
-          { x: newRotation[0], y: newRotation[1], z: newRotation[2], w: 1 },
+          { x: quat.x, y: quat.y, z: quat.z, w: quat.w },
           true,
         );
 
