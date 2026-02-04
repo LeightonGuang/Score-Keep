@@ -28,10 +28,29 @@ const DiceCanvas = () => {
 
   return (
     <>
-      <Canvas camera={{ position: [5, 15, 5], fov: 50 }}>
-        <color attach="background" args={["#111111"]} />
-        <ambientLight intensity={1} />
-        <directionalLight position={[10, 10, 5]} color="white" intensity={1} />
+      <Canvas shadows camera={{ position: [5, 15, 5], fov: 50 }}>
+        <color attach="background" args={["#050505"]} />
+        <ambientLight intensity={0.15} />
+
+        {/* Ground spotlight (main light) */}
+        <spotLight
+          position={[0, 4, 0]} // near the ground
+          angle={Math.PI}
+          penumbra={0.6}
+          intensity={50}
+          distance={20}
+          castShadow
+          shadow-mapSize={[2048, 2048]}
+          shadow-bias={-0.0005}
+        />
+
+        {/* Soft rim / fill light */}
+        <directionalLight
+          position={[6, 8, -6]}
+          intensity={0.6}
+          color="#4f7cff"
+          castShadow
+        />
 
         <Physics gravity={[0, -30, 0]}>
           {/* Dice */}
@@ -42,7 +61,11 @@ const DiceCanvas = () => {
           <RigidBody type="fixed" colliders="cuboid" restitution={0.3}>
             <mesh receiveShadow position={[0, -0.5, 0]}>
               <boxGeometry args={[SIZE, 0.1, SIZE]} />
-              <meshStandardMaterial color={WALL_COLOR} />
+              <meshStandardMaterial
+                color={WALL_COLOR}
+                roughness={0.75}
+                metalness={0.1}
+              />
             </mesh>
           </RigidBody>
 
