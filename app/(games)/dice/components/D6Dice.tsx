@@ -19,7 +19,7 @@ interface DiceProps {
   DICE_COLOR?: string;
 }
 
-export const Dice = forwardRef<DiceHandle, DiceProps>(
+export const D6Dice = forwardRef<DiceHandle, DiceProps>(
   ({ position = [0, 3, 0], DICE_COLOR = "#FFFFFF" }, ref) => {
     const DICE_RADIUS = 0.1;
 
@@ -207,4 +207,4 @@ export const Dice = forwardRef<DiceHandle, DiceProps>(
   },
 );
 
-Dice.displayName = "Dice";
+D6Dice.displayName = "D6Dice";
