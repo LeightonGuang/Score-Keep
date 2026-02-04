@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
-import { OrbitControls, useTexture } from "@react-three/drei";
+import { Environment, OrbitControls, useTexture } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
 import { D4Dice } from "./D4Dice";
 import { D6Dice, DiceHandle } from "./D6Dice";
@@ -78,7 +78,7 @@ const DiceCanvas = () => {
             <meshStandardMaterial
               color={GROUND_COLOUR}
               roughness={0.8}
-              metalness={0.05}
+              metalness={0}
               map={feltTexture}
             />
           </mesh>
@@ -173,10 +173,15 @@ const DiceCanvas = () => {
   return (
     <>
       <Canvas shadows camera={{ position: [10, 15, 0], fov: 50 }}>
-        <color attach="background" args={["#050505"]} />
-        <ambientLight intensity={0.2} />
+        <color attach="background" args={["#111111"]} />
+        <Environment
+          files="/textures/dice/hdr/purple-studio-4k.hdr"
+          background
+          blur={0.2}
+        />
 
         <spotLight
+        color={"white"}
           position={[0, 4, 0]}
           angle={Math.PI}
           penumbra={0.6}
@@ -187,12 +192,12 @@ const DiceCanvas = () => {
           shadow-bias={-0.0005}
         />
 
-        <directionalLight
+        {/* <directionalLight
           position={[6, 8, -6]}
           intensity={0.6}
           color="#4f7cff"
           castShadow
-        />
+        /> */}
 
         <Physics gravity={[0, -30, 0]}>
           {/* Dice */}
@@ -251,14 +256,14 @@ const DiceCanvas = () => {
 
         <button
           onClick={rerollDice}
-          className="rounded bg-white px-6 py-2 font-bold text-black"
+          className="rounded bg-white px-6 py-2 font-bold text-black duration-200 hover:cursor-pointer active:scale-95"
         >
           ROLL
         </button>
 
         <button
           onClick={() => redirect("/")}
-          className="flex h-9 w-9 items-center justify-center rounded bg-zinc-800 text-white"
+          className="flex h-9 w-9 items-center justify-center rounded bg-zinc-800 text-white duration-300 hover:cursor-pointer active:scale-95"
         >
           ✕
         </button>
