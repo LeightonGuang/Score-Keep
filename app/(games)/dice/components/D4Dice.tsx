@@ -109,7 +109,7 @@ export const D4Dice = forwardRef<DiceHandle, DiceProps>(
         position={position}
         rotation={initialRotation}
         colliders="hull"
-        restitution={0.3}
+        restitution={0.5}
         friction={0.2}
         mass={1}
         ccd
