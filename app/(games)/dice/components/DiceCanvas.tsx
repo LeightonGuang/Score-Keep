@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useTexture } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
 import { D4Dice } from "./D4Dice";
 import { D6Dice, DiceHandle } from "./D6Dice";
@@ -17,6 +17,7 @@ const DiceCanvas = () => {
   const [diceSides, setDiceSides] = useState<4 | 6 | 8 | 10 | 12 | 20>(6);
   const diceRefs = useRef<(DiceHandle | null)[]>([]);
 
+  // Reset refs when count changes
   useEffect(() => {
     diceRefs.current = diceRefs.current.slice(0, diceCount);
   }, [diceCount]);
@@ -49,7 +50,7 @@ const DiceCanvas = () => {
   const INNER_SIZE = 8;
   const WALL_THICKNESS = 0.4;
   const TRAY_HEIGHT = 1.5;
-  const LID_Y = 3.5;
+  const LID_Y = 8;
 
   const HALF_INNER = INNER_SIZE / 2;
   const HALF_THICKNESS = WALL_THICKNESS / 2;
@@ -57,11 +58,123 @@ const DiceCanvas = () => {
   const GROUND_COLOUR = "green";
   const WALL_COLOUR = "#b67544";
 
+  // ----------------- Tray Component -----------------
+  const Tray = () => {
+    // load texture from public folder
+    const feltTexture = useTexture("/textures/dice/felt-texture.jpg");
+    const darkWoodTexture = useTexture("/textures/dice/dark-wood-texture.jpg");
+
+    return (
+      <>
+        {/* Ground */}
+        <RigidBody
+          type="fixed"
+          colliders="cuboid"
+          restitution={0.1}
+          friction={0.9}
+        >
+          <mesh receiveShadow position={[0, -0.05, 0]}>
+            <boxGeometry args={[INNER_SIZE, 0.1, INNER_SIZE]} />
+            <meshStandardMaterial
+              color={GROUND_COLOUR}
+              roughness={0.8}
+              metalness={0.05}
+              map={feltTexture}
+            />
+          </mesh>
+        </RigidBody>
+
+        {/* Walls */}
+        {/* FRONT */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, TRAY_HEIGHT / 2, HALF_INNER + HALF_THICKNESS]}>
+            <boxGeometry
+              args={[
+                INNER_SIZE + WALL_THICKNESS * 2,
+                TRAY_HEIGHT,
+                WALL_THICKNESS,
+              ]}
+            />
+            <meshStandardMaterial
+              color={WALL_COLOUR}
+              map={darkWoodTexture}
+              roughness={0.8}
+            />
+          </mesh>
+        </RigidBody>
+
+        {/* BACK */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[0, TRAY_HEIGHT / 2, -HALF_INNER - HALF_THICKNESS]}>
+            <boxGeometry
+              args={[
+                INNER_SIZE + WALL_THICKNESS * 2,
+                TRAY_HEIGHT,
+                WALL_THICKNESS,
+              ]}
+            />
+            <meshStandardMaterial
+              color={WALL_COLOUR}
+              map={darkWoodTexture}
+              roughness={0.8}
+            />
+          </mesh>
+        </RigidBody>
+
+        {/* RIGHT */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[HALF_INNER + HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
+            <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
+            <meshStandardMaterial
+              color={WALL_COLOUR}
+              map={darkWoodTexture}
+              roughness={0.8}
+            />
+          </mesh>
+        </RigidBody>
+
+        {/* LEFT */}
+        <RigidBody type="fixed" colliders="cuboid">
+          <mesh position={[-HALF_INNER - HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
+            <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
+            <meshStandardMaterial
+              color={WALL_COLOUR}
+              map={darkWoodTexture}
+              roughness={0.8}
+            />
+          </mesh>
+        </RigidBody>
+
+        {/* Invisible top bounds */}
+        {[
+          [0, LID_Y, HALF_INNER + HALF_THICKNESS],
+          [0, LID_Y, -HALF_INNER - HALF_THICKNESS],
+          [HALF_INNER + HALF_THICKNESS, LID_Y, 0],
+          [-HALF_INNER - HALF_THICKNESS, LID_Y, 0],
+        ].map((pos, i) => (
+          <RigidBody key={i} type="fixed" colliders="cuboid">
+            <mesh position={pos as [number, number, number]}>
+              <boxGeometry
+                args={[
+                  i < 2 ? INNER_SIZE + WALL_THICKNESS * 2 : WALL_THICKNESS,
+                  13,
+                  i < 2 ? WALL_THICKNESS : INNER_SIZE,
+                ]}
+              />
+              <meshStandardMaterial transparent opacity={0} />
+            </mesh>
+          </RigidBody>
+        ))}
+      </>
+    );
+  };
+
+  // ----------------- Canvas Render -----------------
   return (
     <>
       <Canvas shadows camera={{ position: [10, 15, 0], fov: 50 }}>
         <color attach="background" args={["#050505"]} />
-        <ambientLight intensity={0.15} />
+        <ambientLight intensity={0.2} />
 
         <spotLight
           position={[0, 4, 0]}
@@ -98,87 +211,7 @@ const DiceCanvas = () => {
             />
           ))}
 
-          {/* Ground */}
-          <RigidBody
-            type="fixed"
-            colliders="cuboid"
-            restitution={0.1}
-            friction={0.9}
-          >
-            <mesh receiveShadow position={[0, -0.05, 0]}>
-              <boxGeometry args={[INNER_SIZE, 0.1, INNER_SIZE]} />
-              <meshStandardMaterial
-                color={GROUND_COLOUR}
-                roughness={0.8}
-                metalness={0.05}
-              />
-            </mesh>
-          </RigidBody>
-
-          {/* FRONT */}
-          <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[0, TRAY_HEIGHT / 2, HALF_INNER + HALF_THICKNESS]}>
-              <boxGeometry
-                args={[
-                  INNER_SIZE + WALL_THICKNESS * 2,
-                  TRAY_HEIGHT,
-                  WALL_THICKNESS,
-                ]}
-              />
-              <meshStandardMaterial color={WALL_COLOUR} />
-            </mesh>
-          </RigidBody>
-
-          {/* BACK */}
-          <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[0, TRAY_HEIGHT / 2, -HALF_INNER - HALF_THICKNESS]}>
-              <boxGeometry
-                args={[
-                  INNER_SIZE + WALL_THICKNESS * 2,
-                  TRAY_HEIGHT,
-                  WALL_THICKNESS,
-                ]}
-              />
-              <meshStandardMaterial color={WALL_COLOUR} />
-            </mesh>
-          </RigidBody>
-
-          {/* RIGHT */}
-          <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[HALF_INNER + HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
-              <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
-              <meshStandardMaterial color={WALL_COLOUR} />
-            </mesh>
-          </RigidBody>
-
-          {/* LEFT */}
-          <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[-HALF_INNER - HALF_THICKNESS, TRAY_HEIGHT / 2, 0]}>
-              <boxGeometry args={[WALL_THICKNESS, TRAY_HEIGHT, INNER_SIZE]} />
-              <meshStandardMaterial color={WALL_COLOUR} />
-            </mesh>
-          </RigidBody>
-
-          {/* INVISIBLE TOP BOUNDS */}
-          {[
-            [0, LID_Y, HALF_INNER + HALF_THICKNESS],
-            [0, LID_Y, -HALF_INNER - HALF_THICKNESS],
-            [HALF_INNER + HALF_THICKNESS, LID_Y, 0],
-            [-HALF_INNER - HALF_THICKNESS, LID_Y, 0],
-          ].map((pos, i) => (
-            <RigidBody key={i} type="fixed" colliders="cuboid">
-              <mesh position={pos as [number, number, number]}>
-                <boxGeometry
-                  args={[
-                    i < 2 ? INNER_SIZE + WALL_THICKNESS * 2 : WALL_THICKNESS,
-                    0.5,
-                    i < 2 ? WALL_THICKNESS : INNER_SIZE,
-                  ]}
-                />
-                <meshStandardMaterial transparent opacity={0} />
-              </mesh>
-            </RigidBody>
-          ))}
+          <Tray />
         </Physics>
 
         <OrbitControls />
