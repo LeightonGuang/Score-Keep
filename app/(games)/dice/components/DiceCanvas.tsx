@@ -173,7 +173,8 @@ const DiceCanvas = () => {
   return (
     <>
       <Canvas shadows camera={{ position: [10, 15, 0], fov: 50 }}>
-        <color attach="background" args={["#111111"]} />
+        {/* <color attach="background" args={["#111111"]} /> */}
+
         <Environment
           files="/textures/dice/hdr/purple-studio-4k.hdr"
           background
@@ -181,7 +182,7 @@ const DiceCanvas = () => {
         />
 
         <spotLight
-        color={"white"}
+          color={"white"}
           position={[0, 4, 0]}
           angle={Math.PI}
           penumbra={0.6}
