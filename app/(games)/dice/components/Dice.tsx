@@ -155,6 +155,14 @@ export const Dice = forwardRef<DiceHandle, DiceProps>(
           castShadow
         >
           <meshStandardMaterial color={DICE_COLOR} roughness={0.2} />
+          {/* <meshPhysicalMaterial
+            color={DICE_COLOR}
+            roughness={0.25}
+            transmission={1} // transparency like real glass
+            thickness={1} // how deep the glass is
+            clearcoat={1}
+            transparent
+          /> */}
         </RoundedBox>
 
         {/* Face 1 (Front +Z) */}
