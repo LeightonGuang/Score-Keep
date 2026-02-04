@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { GAMES } from "@/data/games";
 import type { Metadata } from "next";
-import ThemeToggle from "./components/ThemeToggle";
+// ThemeToggle moved to layout
 import HeroCarousel from "./components/HeroCarousel";
 
 export const metadata: Metadata = {
@@ -33,95 +33,80 @@ const AdPlaceholder = ({ className = "" }: { className?: string }) => (
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 transition-colors duration-500 dark:bg-zinc-950 dark:text-white">
-      {/* Top Navigation - Server Side with Client Island for Toggle */}
-      <nav className="fixed top-0 z-50 w-full border-b border-zinc-500/10 bg-white/70 backdrop-blur-xl dark:bg-zinc-950/70">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-black tracking-tighter">
-            SCORE KEEP
-          </span>
-          <ThemeToggle />
-        </div>
-      </nav>
+    <main className="mx-auto max-w-6xl px-6 pt-24 pb-20">
+      {/* Carousel Header - Client Island */}
+      <HeroCarousel games={GAMES} />
 
-      <main className="mx-auto max-w-6xl px-6 pt-24 pb-20">
-        {/* Carousel Header - Client Island */}
-        <HeroCarousel games={GAMES} />
+      {/* Ad Placement: Top Leaderboard - Server Side */}
+      <AdPlaceholder className="mb-12 h-32 rounded-3xl" />
 
-        {/* Ad Placement: Top Leaderboard - Server Side */}
-        <AdPlaceholder className="mb-12 h-32 rounded-3xl" />
+      {/* Grid Title - Server Side */}
+      <div className="mb-8 flex items-end justify-between px-2">
+        <h2 className="text-sm font-black tracking-[.25em] text-zinc-500 uppercase">
+          Available Toolkits
+        </h2>
+        <div className="mx-6 h-px flex-1 bg-zinc-500/10" />
+      </div>
 
-        {/* Grid Title - Server Side */}
-        <div className="mb-8 flex items-end justify-between px-2">
-          <h2 className="text-sm font-black tracking-[.25em] text-zinc-500 uppercase">
-            Available Toolkits
-          </h2>
-          <div className="mx-6 h-px flex-1 bg-zinc-500/10" />
-        </div>
-
-        {/* Tools Grid - Server Side */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {GAMES.map((game) => (
-            <Link
-              key={game.id}
-              href={game.href}
-              className={`group flex flex-col justify-between overflow-hidden rounded-3xl border border-zinc-500/10 bg-white p-6 shadow-sm transition-all hover:border-zinc-500/30 hover:shadow-md active:scale-95 dark:bg-zinc-950 ${game.status === "coming-soon" ? "cursor-default opacity-60 grayscale" : ""}`}
-            >
-              <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-500/10 bg-zinc-500/5 transition-all group-hover:border-zinc-500/30">
-                  <div className="h-6 w-6 text-zinc-950 dark:text-white">
-                    {game.icon}
-                  </div>
+      {/* Tools Grid - Server Side */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {GAMES.map((game) => (
+          <Link
+            key={game.id}
+            href={game.href}
+            className={`group flex flex-col justify-between overflow-hidden rounded-3xl border border-zinc-500/10 bg-white p-6 shadow-sm transition-all hover:border-zinc-500/30 hover:shadow-md active:scale-95 dark:bg-zinc-950 ${
+              game.status === "coming-soon"
+                ? "cursor-default opacity-60 grayscale"
+                : ""
+            }`}
+          >
+            <div>
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-500/10 bg-zinc-500/5 transition-all group-hover:border-zinc-500/30">
+                <div className="h-6 w-6 text-zinc-950 dark:text-white">
+                  {game.icon}
                 </div>
-                <h3 className="mb-2 text-xl font-bold tracking-tight">
-                  {game.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                  {game.description}
-                </p>
               </div>
+              <h3 className="mb-2 text-xl font-bold tracking-tight">
+                {game.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                {game.description}
+              </p>
+            </div>
 
-              <div className="mt-8 flex items-center justify-between">
-                {game.status === "active" ? (
-                  <span className="text-[10px] font-black tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
-                    Free Access →
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-zinc-500/10 px-3 py-1 text-[10px] font-black tracking-widest text-zinc-500/50 uppercase">
-                    Beta
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
+            <div className="mt-8 flex items-center justify-between">
+              {game.status === "active" ? (
+                <span className="text-[10px] font-black tracking-widest text-zinc-500 uppercase dark:text-zinc-400">
+                  Free Access →
+                </span>
+              ) : (
+                <span className="rounded-full bg-zinc-500/10 px-3 py-1 text-[10px] font-black tracking-widest text-zinc-500/50 uppercase">
+                  Beta
+                </span>
+              )}
+            </div>
+          </Link>
+        ))}
 
-          {/* Request Card - Server Side */}
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-500/20 bg-zinc-500/5 p-6 text-center text-zinc-400 transition-all dark:text-zinc-700">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="mb-3 h-8 w-8 opacity-20"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span className="text-xs font-bold tracking-widest uppercase">
-              Add Request
-            </span>
-          </div>
+        {/* Request Card - Server Side */}
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-500/20 bg-zinc-500/5 p-6 text-center text-zinc-400 transition-all dark:text-zinc-700">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="mb-3 h-8 w-8 opacity-20"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span className="text-xs font-bold tracking-widest uppercase">
+            Add Request
+          </span>
         </div>
+      </div>
 
-        {/* Ad Placement: Bottom Banner - Server Side */}
-        <AdPlaceholder className="mt-20 h-48 rounded-4xl" />
-
-        {/* Footer info - Server Side */}
-        <footer className="mt-20 border-t border-zinc-500/10 pt-8 text-center">
-          <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">
-            © 2026 Score Keep — Professional Match Management
-          </p>
-        </footer>
-      </main>
-    </div>
+      {/* Ad Placement: Bottom Banner - Server Side */}
+      <AdPlaceholder className="mt-20 h-48 rounded-4xl" />
+    </main>
   );
 }
