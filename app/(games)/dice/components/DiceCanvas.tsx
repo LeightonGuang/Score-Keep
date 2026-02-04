@@ -3,28 +3,57 @@
 import { Canvas } from "@react-three/fiber";
 import { Physics, RigidBody } from "@react-three/rapier";
 import { OrbitControls } from "@react-three/drei";
-import { useRef } from "react";
-import { Dice, DiceHandle } from "./Dice";
+import { useRef, useState, useEffect } from "react";
+import { D4Dice } from "./D4Dice";
+import { D6Dice, DiceHandle } from "./D6Dice";
+import { D8Dice } from "./D8Dice";
+import { D10Dice } from "./D10Dice";
+import { D12Dice } from "./D12Dice";
+import { D20Dice } from "./D20Dice";
 import { redirect } from "next/navigation";
 
 const DiceCanvas = () => {
-  const dice1Ref = useRef<DiceHandle>(null);
-  const dice2Ref = useRef<DiceHandle>(null);
+  const [diceCount, setDiceCount] = useState(2);
+  const [diceSides, setDiceSides] = useState<4 | 6 | 8 | 10 | 12 | 20>(6);
+  const diceRefs = useRef<(DiceHandle | null)[]>([]);
+
+  // Reset refs when count changes
+  useEffect(() => {
+    diceRefs.current = diceRefs.current.slice(0, diceCount);
+  }, [diceCount]);
 
   const rerollDice = () => {
-    if (dice1Ref.current) {
-      dice1Ref.current.reroll();
-    }
-    if (dice2Ref.current) {
-      dice2Ref.current.reroll();
+    diceRefs.current.forEach((dice) => {
+      if (dice) dice.reroll();
+    });
+  };
+
+  const getDiceComponent = (sides: number) => {
+    switch (sides) {
+      case 4:
+        return D4Dice;
+      case 8:
+        return D8Dice;
+      case 10:
+        return D10Dice;
+      case 12:
+        return D12Dice;
+      case 20:
+        return D20Dice;
+      case 6:
+      default:
+        return D6Dice;
     }
   };
 
-  const WALL_HEIGHT = 4;
-  const WALL_THICKNESS = 0.2;
+  const CurrentDice = getDiceComponent(diceSides);
+
+  const WALL_HEIGHT = 1.5;
+  const WALL_THICKNESS = 0.4;
   const SIZE = 10;
-  const WALL_COLOR = "green";
-  const WALL_OPACITY = 0;
+  const GROUND_COLOUR = "green";
+  const WALL_COLOUR = "#b67544";
+  const WALL_OPACITY = 1;
 
   return (
     <>
@@ -32,9 +61,8 @@ const DiceCanvas = () => {
         <color attach="background" args={["#050505"]} />
         <ambientLight intensity={0.15} />
 
-        {/* Ground spotlight (main light) */}
         <spotLight
-          position={[0, 4, 0]} // near the ground
+          position={[0, 4, 0]}
           angle={Math.PI}
           penumbra={0.6}
           intensity={50}
@@ -44,7 +72,6 @@ const DiceCanvas = () => {
           shadow-bias={-0.0005}
         />
 
-        {/* Soft rim / fill light */}
         <directionalLight
           position={[6, 8, -6]}
           intensity={0.6}
@@ -53,52 +80,61 @@ const DiceCanvas = () => {
         />
 
         <Physics gravity={[0, -30, 0]}>
-          {/* Dice */}
-          <Dice ref={dice1Ref} position={[0, 3, 0]} DICE_COLOR="#FFFFFF" />
-          <Dice ref={dice2Ref} position={[2, 3, 0]} DICE_COLOR="#FFFFFF" />
+          {Array.from({ length: diceCount }).map((_, i) => (
+            <CurrentDice
+              key={`${diceSides}-${i}`} // Force re-mount on type change
+              ref={(el) => {
+                diceRefs.current[i] = el;
+              }}
+              position={[
+                (Math.random() - 0.5) * 3, // Increased spread
+                3 + i * 1.5, // Increased vertical spacing to prevent clipping
+                (Math.random() - 0.5) * 3,
+              ]}
+              DICE_COLOR="#FFFFFF"
+            />
+          ))}
 
-          {/* Ground */}
           <RigidBody type="fixed" colliders="cuboid" restitution={0.3}>
             <mesh receiveShadow position={[0, -0.5, 0]}>
               <boxGeometry args={[SIZE, 0.1, SIZE]} />
               <meshStandardMaterial
-                color={WALL_COLOR}
+                color={GROUND_COLOUR}
                 roughness={0.75}
                 metalness={0.1}
               />
             </mesh>
           </RigidBody>
 
-          {/* Walls */}
           <RigidBody type="fixed" colliders="cuboid">
-            <mesh position={[0, WALL_HEIGHT / 3, SIZE / 2]}>
+            <mesh position={[0, -WALL_HEIGHT / 8, SIZE / 2]}>
               <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
               <meshStandardMaterial
-                color={WALL_COLOR}
+                color={WALL_COLOUR}
                 transparent
                 opacity={WALL_OPACITY}
               />
             </mesh>
-            <mesh position={[0, WALL_HEIGHT / 3, -SIZE / 2]}>
+            <mesh position={[0, -WALL_HEIGHT / 8, -SIZE / 2]}>
               <boxGeometry args={[SIZE, WALL_HEIGHT, WALL_THICKNESS]} />
               <meshStandardMaterial
-                color={WALL_COLOR}
+                color={WALL_COLOUR}
                 transparent
                 opacity={WALL_OPACITY}
               />
             </mesh>
-            <mesh position={[SIZE / 2, WALL_HEIGHT / 3, 0]}>
+            <mesh position={[SIZE / 2, -WALL_HEIGHT / 8, 0]}>
               <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
               <meshStandardMaterial
-                color={WALL_COLOR}
+                color={WALL_COLOUR}
                 transparent
                 opacity={WALL_OPACITY}
               />
             </mesh>
-            <mesh position={[-SIZE / 2, WALL_HEIGHT / 3, 0]}>
+            <mesh position={[-SIZE / 2, -WALL_HEIGHT / 8, 0]}>
               <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, SIZE]} />
               <meshStandardMaterial
-                color={WALL_COLOR}
+                color={WALL_COLOUR}
                 transparent
                 opacity={WALL_OPACITY}
               />
@@ -109,20 +145,53 @@ const DiceCanvas = () => {
         <OrbitControls />
       </Canvas>
 
-      {/* Reroll button */}
-      <div className="absolute bottom-2 mx-4 flex w-max gap-4 rounded-lg bg-black/50 p-2">
+      {/* Controls Overlay */}
+      <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 rounded-lg bg-black/50 p-3 backdrop-blur-sm sm:flex-row">
+        {/* Dice Count Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-white uppercase">Count</span>
+          <select
+            value={diceCount}
+            onChange={(e) => setDiceCount(Number(e.target.value))}
+            className="cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-white focus:outline-none"
+          >
+            {[...Array(10)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Dice Type Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-white uppercase">Type</span>
+          <select
+            value={diceSides}
+            onChange={(e) => setDiceSides(Number(e.target.value) as any)}
+            className="cursor-pointer rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-white focus:outline-none"
+          >
+            {[4, 6, 8, 10, 12, 20].map((sides) => (
+              <option key={sides} value={sides}>
+                D{sides}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mx-2 hidden h-6 w-px bg-zinc-700 sm:block"></div>
+
         <button
           onClick={rerollDice}
-          className="rounded-md bg-zinc-900 px-6 py-2 select-none hover:cursor-pointer active:scale-95"
+          className="w-full rounded-md bg-white px-6 py-2 font-bold text-black transition-transform hover:cursor-pointer active:scale-95 sm:w-auto"
         >
-          Roll
+          ROLL
         </button>
 
         <button
-          onClick={() => {
-            redirect("/");
-          }}
-          className="rounded-md bg-zinc-900 px-4 py-2 hover:cursor-pointer active:scale-95"
+          onClick={() => redirect("/")}
+          className="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-800 text-white transition-colors hover:bg-zinc-700 active:scale-95"
+          title="Exit"
         >
           <svg
             viewBox="0 0 24 24"
@@ -133,8 +202,9 @@ const DiceCanvas = () => {
             strokeLinejoin="round"
             className="h-4 w-4"
           >
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
+            <circle cx="12" cy="12" r="10" />
+            <path d="m15 9-6 6" />
+            <path d="m9 9 6 6" />
           </svg>
         </button>
       </div>
