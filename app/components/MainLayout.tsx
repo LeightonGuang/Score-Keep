@@ -38,7 +38,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </nav>
       )}
 
-      {children}
+      <main>{children}</main>
 
       {showNavAndFooter && (
         <footer className="mt-20 border-t border-zinc-500/10 py-12 text-center md:py-16">
