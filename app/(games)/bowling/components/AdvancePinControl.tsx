@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ALL_PINS, useBowling } from "../context/BowlingContext";
+import { useBowling } from "../context/BowlingContext";
+import { ALL_PINS } from "../constants";
 
 type PinMode = "up" | "down";
 
@@ -25,7 +26,7 @@ const Pin = ({ pin, standing, available, onClick }: PinProps) => (
           : "border-border bg-surface-muted text-muted-light hover:border-accent hover:text-foreground"
     }`}
   >
-    <span className="bg-red-500 absolute top-1 h-1.5 w-5 rounded-full" />
+    <span className="absolute top-1 h-1.5 w-5 rounded-full bg-red-500" />
 
     <span className="mt-2 text-sm font-bold">{pin}</span>
   </button>
