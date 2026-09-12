@@ -1,101 +1,37 @@
 "use client";
 
+import {
+  useState,
+  useEffect,
+  useContext,
+  useReducer,
+  createContext,
+  type ReactNode,
+} from "react";
 import { recordRoll } from "../games";
-import { createContext, useContext, useReducer, type ReactNode } from "react";
+
+import type {
+  Frame,
+  BowlingGame,
+  BowlingState,
+  BowlingAction,
+  BowlingPlayer,
+} from "../types";
 
 export const ALL_PINS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export const MAX_PLAYERS = 6;
 export const FRAME_COUNT = 10;
 
-export interface Frame {
-  rolls: number[];
-
-  // Pins remaining after each ball.
-  //
-  // Example:
-  // ball 1: [2, 3, 4, 5, 6, 7, 8]
-  // ball 2: [5, 6, 7, 8]
-  pinStates: number[][];
-}
-
-export interface BowlingGame {
-  id: string;
-  frames: Frame[];
-}
-
-export interface BowlingPlayer {
-  id: string;
-  name: string;
-  games: BowlingGame[];
-}
-
-export interface Turn {
-  frame: number;
-  player: number;
-  ball: 1 | 2 | 3;
-}
-
-interface BowlingState {
-  players: BowlingPlayer[];
-
-  /**
-   * Zero-based index of the currently active game.
-   *
-   * 0 = Game 1
-   * 1 = Game 2
-   * 2 = Game 3
-   */
-  currentGame: number;
-
-  turn: Turn;
-}
-
-type BowlingAction =
-  | {
-      type: "ADD_PLAYER";
-      name: string;
-    }
-  | {
-      type: "REMOVE_PLAYER";
-      id: string;
-    }
-  | {
-      type: "CLEAR_PLAYERS";
-    }
-  | {
-      type: "SET_PLAYERS";
-      players: BowlingPlayer[];
-    }
-  | {
-      type: "NEW_GAME";
-    }
-  | {
-      type: "SET_GAME";
-      gameIndex: number;
-    }
-  | {
-      type: "RECORD_ROLL";
-      pins: number;
-      standingPins: number[];
-    };
+const STORAGE_KEY = "bowling-score-state";
 
 interface BowlingContextValue extends BowlingState {
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   setPlayers: (players: BowlingPlayer[]) => void;
   clearPlayers: () => void;
-
-  /**
-   * Creates a new game for all players.
-   */
   newGame: () => void;
-
-  /**
-   * Switches to an existing game.
-   */
   setGame: (gameIndex: number) => void;
-
   recordRoll: (pins: number, standingPins: number[]) => void;
 }
 
@@ -130,8 +66,166 @@ const initialState: BowlingState = {
   },
 };
 
+/*
+ * Validate the stored structure properly.
+ *
+ * This is especially important because you previously
+ * had players.frames and now have players.games.
+ */
+function isValidFrame(value: unknown): value is Frame {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const frame = value as Frame;
+
+  return (
+    Array.isArray(frame.rolls) &&
+    Array.isArray(frame.pinStates) &&
+    frame.rolls.every(
+      (roll) => typeof roll === "number" && Number.isInteger(roll),
+    ) &&
+    frame.pinStates.every(
+      (pins) =>
+        Array.isArray(pins) &&
+        pins.every((pin) => typeof pin === "number" && Number.isInteger(pin)),
+    )
+  );
+}
+
+function isValidGame(value: unknown): value is BowlingGame {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const game = value as BowlingGame;
+
+  return (
+    typeof game.id === "string" &&
+    Array.isArray(game.frames) &&
+    game.frames.length === FRAME_COUNT &&
+    game.frames.every(isValidFrame)
+  );
+}
+
+function isValidPlayer(value: unknown): value is BowlingPlayer {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const player = value as BowlingPlayer;
+
+  return (
+    typeof player.id === "string" &&
+    typeof player.name === "string" &&
+    Array.isArray(player.games) &&
+    player.games.length > 0 &&
+    player.games.every(isValidGame)
+  );
+}
+
+function isValidState(value: unknown): value is BowlingState {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const state = value as BowlingState;
+
+  if (!Array.isArray(state.players)) {
+    return false;
+  }
+
+  if (state.players.length > MAX_PLAYERS) {
+    return false;
+  }
+
+  if (!state.players.every(isValidPlayer)) {
+    return false;
+  }
+
+  if (!Number.isInteger(state.currentGame) || state.currentGame < 0) {
+    return false;
+  }
+
+  if (
+    state.players.length > 0 &&
+    !state.players.every(
+      (player) => player.games[state.currentGame] !== undefined,
+    )
+  ) {
+    return false;
+  }
+
+  if (!state.turn || typeof state.turn !== "object") {
+    return false;
+  }
+
+  if (
+    !Number.isInteger(state.turn.frame) ||
+    state.turn.frame < 1 ||
+    state.turn.frame > FRAME_COUNT
+  ) {
+    return false;
+  }
+
+  if (
+    !Number.isInteger(state.turn.player) ||
+    state.turn.player < 0 ||
+    (state.players.length > 0 && state.turn.player >= state.players.length)
+  ) {
+    return false;
+  }
+
+  if (![1, 2, 3].includes(state.turn.ball)) {
+    return false;
+  }
+
+  return true;
+}
+
+function loadState(): BowlingState {
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+
+    if (!stored) {
+      return initialState;
+    }
+
+    const parsed: unknown = JSON.parse(stored);
+
+    if (!isValidState(parsed)) {
+      console.warn("Invalid or outdated bowling state. Starting a new game.");
+
+      window.localStorage.removeItem(STORAGE_KEY);
+
+      return initialState;
+    }
+
+    return parsed;
+  } catch (error) {
+    console.error("Failed to load bowling state:", error);
+
+    return initialState;
+  }
+}
+
+function saveState(state: BowlingState) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error("Failed to save bowling state:", error);
+  }
+}
+
 function reducer(state: BowlingState, action: BowlingAction): BowlingState {
   switch (action.type) {
+    /*
+     * IMPORTANT:
+     * Restore the ENTIRE state.
+     */
+    case "HYDRATE":
+      return action.state;
+
     case "ADD_PLAYER": {
       const name = action.name.trim();
 
@@ -200,14 +294,11 @@ function reducer(state: BowlingState, action: BowlingAction): BowlingState {
         return state;
       }
 
-      /*
-       * Every player must have this game.
-       */
-      const gameExistsForEveryPlayer = state.players.every(
+      const exists = state.players.every(
         (player) => player.games[action.gameIndex] !== undefined,
       );
 
-      if (!gameExistsForEveryPlayer) {
+      if (!exists) {
         return state;
       }
 
@@ -234,6 +325,39 @@ const BowlingContext = createContext<BowlingContextValue | null>(null);
 
 export const BowlingProvider = ({ children }: BowlingProviderProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  /*
+   * This prevents the initial empty state from being
+   * written over the saved game.
+   */
+  const [hydrated, setHydrated] = useState(false);
+
+  /*
+   * LOAD
+   */
+  useEffect(() => {
+    const savedState = loadState();
+
+    dispatch({
+      type: "HYDRATE",
+      state: savedState,
+    });
+
+    setHydrated(true);
+  }, []);
+
+  /*
+   * SAVE
+   *
+   * Do NOT save until hydration has completed.
+   */
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    saveState(state);
+  }, [state, hydrated]);
 
   const value: BowlingContextValue = {
     players: state.players,

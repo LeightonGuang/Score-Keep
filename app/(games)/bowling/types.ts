@@ -48,6 +48,10 @@ export interface BowlingState {
 
 export type BowlingAction =
   | {
+      type: "HYDRATE";
+      state: BowlingState;
+    }
+  | {
       type: "ADD_PLAYER";
       name: string;
     }

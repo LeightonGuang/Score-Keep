@@ -1,19 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBowling } from "./context/BowlingContext";
 import BowlingScoreCard from "./components/BowlingScoreCard";
 import BowlingPlayerForm from "./components/BowlingPlayerForm";
 
 const BowlingPage = () => {
   const { players } = useBowling();
+
   const [showForm, setShowForm] = useState(true);
+
+  /*
+   * Once localStorage hydrates and players appear,
+   * automatically return to the game.
+   */
+  useEffect(() => {
+    if (players.length > 0) setShowForm(false);
+  }, [players.length]);
 
   const handleStartGame = () => {
     setShowForm(false);
   };
 
-  if (showForm) {
+  /*
+   * Show the setup screen only when there are no players.
+   */
+  if (showForm && players.length === 0) {
     return (
       <main className="min-h-screen bg-[#f4f1ea] text-[#172033]">
         <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-6 py-12">
