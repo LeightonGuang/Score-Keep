@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useBowling } from "../context/BowlingContext";
 import { ALL_PINS } from "../constants";
+import { useEffect, useState } from "react";
+import { useBowling } from "../context/BowlingContext";
 
 type PinMode = "up" | "down";
 
@@ -37,16 +37,19 @@ const getCurrentRack = (
   pinStates: number[][],
   frameNumber: number,
 ) => {
-  if (rolls.length === 0) {
-    return ALL_PINS;
-  }
+  if (rolls.length === 0) return ALL_PINS;
 
   const lastRoll = rolls[rolls.length - 1];
 
-  if (lastRoll === 10) {
-    return ALL_PINS;
-  }
+  /*
+   * Strike starts a completely new rack.
+   */
+  if (lastRoll === 10) return ALL_PINS;
 
+  /*
+   * A spare in the 10th frame gives
+   * the player a new rack for ball 3.
+   */
   if (frameNumber === 10 && rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
     return ALL_PINS;
   }
@@ -60,40 +63,64 @@ const AdvancePinControl = () => {
   const player = players[turn.player];
   const game = player?.games[currentGame];
   const frame = game?.frames[turn.frame - 1];
-
   const rolls = frame?.rolls ?? [];
   const pinStates = frame?.pinStates ?? [];
-
   const currentRack = getCurrentRack(rolls, pinStates, turn.frame);
-
   const [mode, setMode] = useState<PinMode>("up");
 
   /*
-   * IMPORTANT:
+   * Pins Up:
    *
-   * Pins Up mode:
-   *   selectedPins = pins currently standing.
+   * selectedPins = pins that are standing.
    *
-   * Start with [] so no pins are selected.
+   * Pins Down:
    *
-   * Pins Down mode:
-   *   selectedPins = pins knocked down.
-   *
-   * Also starts with [] because no pins have
-   * been knocked down yet.
+   * selectedPins = pins that are knocked down.
    */
   const [selectedPins, setSelectedPins] = useState<number[]>([]);
+
+  /*
+   * Reset selected pins whenever the bowling turn changes.
+   *
+   * This is important because React preserves local state
+   * when the component stays mounted.
+   *
+   * For example:
+   *
+   * Frame 1 -> Frame 2
+   *
+   * Without this effect, pins selected in Frame 1 would
+   * still be selected in Frame 2.
+   */
+  useEffect(() => {
+    setSelectedPins([]);
+  }, [turn.player, turn.frame, turn.ball, currentGame]);
+
+  /*
+   * Also reset when the actual rack changes.
+   *
+   * This handles:
+   *
+   * - Strike -> new rack
+   * - 10th-frame spare -> new rack
+   * - Different pins remaining after a roll
+   */
+  useEffect(() => {
+    setSelectedPins([]);
+  }, [currentRack.join(",")]);
 
   if (!player || !game || !frame) {
     return null;
   }
 
   /*
-   * In Pins Up mode, selected pins are standing.
+   * Pins Up:
    *
-   * In Pins Down mode, selected pins are knocked down,
-   * so standing pins are everything in the rack that
-   * isn't selected.
+   * selectedPins are the pins standing.
+   *
+   * Pins Down:
+   *
+   * selectedPins are the pins knocked down.
    */
   const standingPins =
     mode === "up"
@@ -103,9 +130,7 @@ const AdvancePinControl = () => {
   const pinsDown = currentRack.length - standingPins.length;
 
   const togglePin = (pin: number) => {
-    if (!currentRack.includes(pin)) {
-      return;
-    }
+    if (!currentRack.includes(pin)) return;
 
     setSelectedPins((current) =>
       current.includes(pin)
@@ -115,41 +140,16 @@ const AdvancePinControl = () => {
   };
 
   const resetPins = () => {
-    /*
-     * In Pins Up mode:
-     * no pins are selected.
-     */
-    if (mode === "up") {
-      setSelectedPins([]);
-      return;
-    }
-
-    /*
-     * In Pins Down mode:
-     * no pins are knocked down.
-     */
     setSelectedPins([]);
   };
 
   const switchMode = (nextMode: PinMode) => {
-    if (nextMode === mode) {
-      return;
-    }
+    if (nextMode === mode) return;
 
     setMode(nextMode);
 
     /*
-     * When switching to Pins Up:
-     * start with nothing selected.
-     */
-    if (nextMode === "up") {
-      setSelectedPins([]);
-      return;
-    }
-
-    /*
-     * When switching to Pins Down:
-     * start with nothing knocked down.
+     * Switching modes starts with a clean selection.
      */
     setSelectedPins([]);
   };
