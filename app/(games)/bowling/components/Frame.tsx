@@ -1,5 +1,6 @@
 import { twMerge } from "tailwind-merge";
 
+import { isSplitRack } from "../games";
 import type { Frame as GameFrame, Turn } from "../types";
 
 interface FrameProps {
@@ -19,6 +20,19 @@ export const Frame = ({ i, frame, turn, score, playerIndex }: FrameProps) => {
     secondRoll !== undefined &&
     firstRoll + secondRoll === 10;
 
+  /*
+   * A split occurs when:
+   *
+   * - The first ball knocks down the head pin.
+   * - There are at least 2 pins left standing.
+   *
+   * pinStates[0] contains the pins standing after
+   * the first roll.
+   */
+  const firstRackAfterRoll = frame.pinStates[0] ?? [];
+
+  const isSplit = isSplitRack(firstRackAfterRoll);
+
   const isCurrentPlayer = turn.player === playerIndex;
   const isCurrentFrame = turn.frame === i;
 
@@ -34,11 +48,19 @@ export const Frame = ({ i, frame, turn, score, playerIndex }: FrameProps) => {
       <div className="flex h-8">
         <div
           className={twMerge(
-            "border-border flex w-1/2 items-center justify-center border-r text-sm",
+            "border-border relative flex w-1/2 items-center justify-center border-r text-sm",
             isFirstBallActive && "bg-accent text-white",
           )}
         >
-          {firstRoll === 10 ? "X" : (firstRoll ?? "")}
+          {isSplit ? (
+            <span className="flex size-6 items-center justify-center rounded-full border-2 border-red-500">
+              {firstRoll === 10 ? "X" : (firstRoll ?? "")}
+            </span>
+          ) : firstRoll === 10 ? (
+            "X"
+          ) : (
+            (firstRoll ?? "")
+          )}
         </div>
 
         <div

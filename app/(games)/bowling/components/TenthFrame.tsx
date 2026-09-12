@@ -1,3 +1,4 @@
+import { isSplitRack } from "../games";
 import { twMerge } from "tailwind-merge";
 
 import type { Frame, Turn } from "../types";
@@ -18,8 +19,18 @@ export const TenthFrame = ({
   const [first, second, third] = frame.rolls;
 
   const isCurrentPlayer = turn.player === playerIndex;
-
   const isCurrentFrame = turn.frame === 10;
+
+  /*
+   * A split occurs when:
+   *
+   * - The first ball isn't a strike.
+   * - The head pin (1) is down.
+   * - At least 2 pins remain standing.
+   */
+  const firstRackAfterRoll = frame.pinStates[0] ?? [];
+
+  const isSplit = isSplitRack(firstRackAfterRoll);
 
   const getRollDisplay = (
     roll: number | undefined,
@@ -38,9 +49,6 @@ export const TenthFrame = ({
 
     /*
      * Ball 2
-     *
-     * A spare is only possible if ball 1
-     * wasn't a strike.
      */
     if (ball === 2) {
       if (first !== undefined && first < 10 && first + roll === 10) {
@@ -52,9 +60,6 @@ export const TenthFrame = ({
 
     /*
      * Ball 3
-     *
-     * A spare here is calculated against
-     * ball 2 when ball 2 wasn't a strike.
      */
     if (second !== undefined && second < 10 && second + roll === 10) {
       return "/";
@@ -73,16 +78,24 @@ export const TenthFrame = ({
           const isActive =
             isCurrentPlayer && isCurrentFrame && turn.ball === ball;
 
+          const isSplitFirstRoll = ball === 1 && isSplit;
+
           return (
             <div
               key={ball}
               className={twMerge(
-                "text-foreground flex w-1/3 items-center justify-center text-sm font-medium",
+                "text-foreground relative flex w-1/3 items-center justify-center text-sm font-medium",
                 ball !== 3 && "border-border border-r",
                 isActive && "bg-accent text-white",
               )}
             >
-              {getRollDisplay(roll, ball)}
+              {isSplitFirstRoll ? (
+                <span className="flex size-6 items-center justify-center rounded-full border-2 border-red-500">
+                  {getRollDisplay(roll, ball)}
+                </span>
+              ) : (
+                getRollDisplay(roll, ball)
+              )}
             </div>
           );
         })}

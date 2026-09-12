@@ -375,3 +375,111 @@ export function getNextPlayerOrFrame(turn: Turn, playerCount: number): Turn {
    */
   return turn;
 }
+
+export const isSplitRack = (standingPins: number[]): boolean => {
+  if (standingPins.length < 2) {
+    return false;
+  }
+
+  // Head pin must be down.
+  if (standingPins.includes(1)) {
+    return false;
+  }
+
+  const pins = new Set(standingPins);
+
+  /*
+   * Classic 7-10 split.
+   */
+  if (pins.has(7) && pins.has(10)) {
+    return true;
+  }
+
+  /*
+   * Physical rows from left to right.
+   *
+   * We use these to determine whether there is
+   * a gap between standing pins.
+   */
+  const rows = [
+    [7, 8, 9, 10],
+    [4, 5, 6],
+    [2, 3],
+  ];
+
+  /*
+   * Check each row for a gap.
+   *
+   * Example:
+   *
+   * 7, 9
+   *
+   * has 8 missing between them -> split.
+   *
+   * 7, 8
+   *
+   * has no gap -> not a split by itself.
+   */
+  for (const row of rows) {
+    const indexes = row
+      .map((pin, index) => (pins.has(pin) ? index : -1))
+      .filter((index) => index !== -1);
+
+    if (indexes.length >= 2) {
+      for (let i = 1; i < indexes.length; i++) {
+        if (indexes[i] - indexes[i - 1] > 1) {
+          return true;
+        }
+      }
+    }
+  }
+
+  /*
+   * Check separation between different rows.
+   *
+   * These are common split combinations:
+   *
+   * 4-6
+   * 5-7
+   * 6-8
+   * 2-4
+   * 3-5
+   * etc.
+   *
+   * We model the actual horizontal positions of the pins.
+   */
+  const positions: Record<number, number> = {
+    7: 0,
+    8: 1,
+    9: 2,
+    10: 3,
+
+    4: 0.5,
+    5: 1.5,
+    6: 2.5,
+
+    2: 1,
+    3: 2,
+
+    1: 1.5,
+  };
+
+  const remaining = standingPins
+    .filter((pin) => pin !== 1)
+    .sort((a, b) => positions[a] - positions[b]);
+
+  /*
+   * A gap of more than one pin position between
+   * standing pins indicates separation.
+   */
+  for (let i = 1; i < remaining.length; i++) {
+    const previous = positions[remaining[i - 1]];
+    const current = positions[remaining[i]];
+
+    if (current - previous >= 1.5) {
+      return true;
+    }
+  }
+
+  return false;
+};
