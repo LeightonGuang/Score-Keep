@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdvancePinControl from "./AdvancePinControl";
 import { useBowling } from "../context/BowlingContext";
@@ -7,34 +8,24 @@ import { useBowling } from "../context/BowlingContext";
 const ALL_PINS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const BowlingScoreControls = () => {
-  const { players, turn, currentGame, recordRoll, newGame } = useBowling();
+  const { players, turn, currentGame, recordRoll, newGame, clearPlayers } =
+    useBowling();
 
   const [mode, setMode] = useState<"basic" | "advanced">("basic");
 
-  if (players.length === 0) {
-    return null;
-  }
-
   const currentPlayer = players[turn.player];
-
   const game = currentPlayer?.games[currentGame];
-
   const currentFrame = game?.frames[turn.frame - 1];
 
   const rolls = currentFrame?.rolls ?? [];
-
   const pinStates = currentFrame?.pinStates ?? [];
 
   const getCurrentRack = (): number[] => {
-    if (rolls.length === 0) {
-      return ALL_PINS;
-    }
+    if (rolls.length === 0) return ALL_PINS;
 
     const lastRoll = rolls[rolls.length - 1];
 
-    if (lastRoll === 10) {
-      return ALL_PINS;
-    }
+    if (lastRoll === 10) return ALL_PINS;
 
     if (turn.frame === 10 && rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
       return ALL_PINS;
@@ -44,25 +35,30 @@ const BowlingScoreControls = () => {
   };
 
   const currentRack = getCurrentRack();
-
   const maxPins = currentRack.length;
-
   const canRoll = maxPins > 0;
 
   const handleRoll = (pins: number) => {
-    if (!canRoll || pins < 0 || pins > maxPins) {
-      return;
-    }
+    if (!canRoll || pins < 0 || pins > maxPins) return;
 
     const standingPins = currentRack.slice(0, maxPins - pins);
 
     recordRoll(pins, standingPins);
   };
 
+  const handleRestart = () => {
+    const confirmed = window.confirm(
+      "Restart the bowling session? This will delete all players and all recorded games.",
+    );
+
+    if (!confirmed) return;
+
+    clearPlayers();
+    window.location.reload();
+  };
+
   useEffect(() => {
-    if (mode !== "basic") {
-      return;
-    }
+    if (mode !== "basic") return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -78,9 +74,7 @@ const BowlingScoreControls = () => {
       if (event.key.toLowerCase() === "x") {
         event.preventDefault();
 
-        if (maxPins === 10) {
-          handleRoll(10);
-        }
+        if (maxPins === 10) handleRoll(10);
 
         return;
       }
@@ -88,15 +82,11 @@ const BowlingScoreControls = () => {
       if (event.key === "/") {
         event.preventDefault();
 
-        if (rolls.length === 0) {
-          return;
-        }
+        if (rolls.length === 0) return;
 
         const lastRoll = rolls[rolls.length - 1];
 
-        if (lastRoll === 10) {
-          return;
-        }
+        if (lastRoll === 10) return;
 
         handleRoll(maxPins);
 
@@ -117,30 +107,56 @@ const BowlingScoreControls = () => {
     };
   }, [mode, turn, rolls, pinStates, maxPins]);
 
+  if (players.length === 0) return null;
+
   return (
     <div className="border-border bg-surface w-full max-w-sm rounded-2xl border p-4 shadow-sm">
       {/* Game controls */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-foreground text-sm font-semibold">
-            Game {currentGame + 1}
-          </p>
+      <div className="mb-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-foreground text-sm font-semibold">
+              Game {currentGame + 1}
+            </p>
 
-          <p className="text-muted text-xs">
-            Player {turn.player + 1}
-            {" · "}
-            Frame {turn.frame}
-          </p>
+            <p className="text-muted mt-1 text-xs">
+              Player {turn.player + 1}
+              {" · "}
+              Frame {turn.frame}
+              {" · "}
+              Ball {turn.ball}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={newGame}
+            className="bg-accent hover:bg-accent-hover focus-visible:ring-accent shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          >
+            Next Game
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={newGame}
-          className="bg-accent hover:bg-accent-hover rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors"
-        >
-          Next Game
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/bowling/results"
+            className="border-border bg-surface text-foreground hover:border-accent hover:bg-surface-muted flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold transition-colors"
+          >
+            Game History
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleRestart}
+            className="flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 transition-colors hover:border-red-300 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+          >
+            Restart
+          </button>
+        </div>
       </div>
+
+      {/* Divider */}
+      <div className="border-border-muted mb-4 border-t" />
 
       {/* Header */}
       <div className="mb-4">
@@ -193,7 +209,7 @@ const BowlingScoreControls = () => {
                 type="button"
                 disabled={disabled}
                 onClick={() => handleRoll(pins)}
-                className="border-border bg-surface text-foreground hover:border-accent hover:bg-accent disabled:bg-surface-muted disabled:text-muted-light aspect-square w-full rounded-xl border text-lg font-semibold transition-all hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-border bg-surface text-foreground hover:border-accent hover:bg-accent active:bg-accent-hover disabled:border-border-muted disabled:bg-surface-muted disabled:text-muted-light flex aspect-square w-full items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition-all duration-150 hover:text-white hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 {isStrike ? "X" : pins}
               </button>
@@ -207,7 +223,7 @@ const BowlingScoreControls = () => {
               !canRoll || rolls.length === 0 || rolls[rolls.length - 1] === 10
             }
             onClick={() => handleRoll(maxPins)}
-            className="border-accent text-accent hover:bg-accent disabled:border-border-muted disabled:bg-surface-muted disabled:text-muted-light aspect-square w-full rounded-xl border text-lg font-semibold transition-all hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="border-accent bg-accent/5 text-accent hover:bg-accent active:bg-accent-hover disabled:border-border-muted disabled:bg-surface-muted disabled:text-muted-light flex aspect-square w-full items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition-all duration-150 hover:text-white hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
             /
           </button>
@@ -216,7 +232,18 @@ const BowlingScoreControls = () => {
         <AdvancePinControl />
       )}
 
-      {/* Turn */}
+      {/* Keyboard hint */}
+      {mode === "basic" && (
+        <div className="text-muted mt-3 text-center text-xs">
+          <span className="font-medium">0–9</span> pins
+          <span className="mx-1.5">·</span>
+          <span className="font-medium">X</span> strike
+          <span className="mx-1.5">·</span>
+          <span className="font-medium">/</span> spare
+        </div>
+      )}
+
+      {/* Turn information */}
       <div className="border-border-muted bg-surface-muted mt-4 flex items-center justify-between rounded-xl border px-4 py-3">
         <div>
           <p className="text-muted text-xs">Current turn</p>

@@ -382,10 +382,12 @@ export const BowlingProvider = ({ children }: BowlingProviderProps) => {
         players,
       }),
 
-    clearPlayers: () =>
+    clearPlayers: () => {
+      localStorage.removeItem(STORAGE_KEY);
       dispatch({
         type: "CLEAR_PLAYERS",
-      }),
+      });
+    },
 
     newGame: () =>
       dispatch({

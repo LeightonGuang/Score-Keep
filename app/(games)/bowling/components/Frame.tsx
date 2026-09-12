@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
 
-import type { Frame as GameFrame, Turn } from "../context/BowlingContext";
+import type { Frame as GameFrame, Turn } from "../types";
 
 interface FrameProps {
   i: number;
