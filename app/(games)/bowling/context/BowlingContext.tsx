@@ -2,8 +2,20 @@
 
 import { createContext, useContext, useReducer, type ReactNode } from "react";
 
+export const ALL_PINS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 export interface Frame {
   rolls: number[];
+
+  // Pins remaining after each ball.
+  //
+  // Example:
+  // ball 1: [2, 3, 4, 5, 6, 7, 8]
+  // ball 2: [5, 6, 7, 8]
+  //
+  // This lets Advanced mode remember exactly
+  // which pins were standing.
+  pinStates: number[][];
 }
 
 export interface BowlingPlayer {
@@ -15,7 +27,7 @@ export interface BowlingPlayer {
 export interface Turn {
   frame: number;
   player: number;
-  ball: number;
+  ball: 1 | 2 | 3;
 }
 
 interface BowlingState {
@@ -24,31 +36,43 @@ interface BowlingState {
 }
 
 type BowlingAction =
-  | { type: "ADD_PLAYER"; name: string }
-  | { type: "REMOVE_PLAYER"; id: string }
-  | { type: "CLEAR_PLAYERS" }
-  | { type: "SET_PLAYERS"; players: BowlingPlayer[] }
-  | { type: "RECORD_ROLL"; pins: number };
+  | {
+      type: "ADD_PLAYER";
+      name: string;
+    }
+  | {
+      type: "REMOVE_PLAYER";
+      id: string;
+    }
+  | {
+      type: "CLEAR_PLAYERS";
+    }
+  | {
+      type: "SET_PLAYERS";
+      players: BowlingPlayer[];
+    }
+  | {
+      type: "RECORD_ROLL";
+      pins: number;
+      standingPins: number[];
+    };
 
 interface BowlingContextValue extends BowlingState {
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   setPlayers: (players: BowlingPlayer[]) => void;
   clearPlayers: () => void;
-  recordRoll: (pins: number) => void;
+  recordRoll: (pins: number, standingPins: number[]) => void;
 }
 
 interface BowlingProviderProps {
   children: ReactNode;
 }
 
-const BowlingContext = createContext<BowlingContextValue | undefined>(
-  undefined,
-);
-
 const createFrames = (): Frame[] =>
   Array.from({ length: 10 }, () => ({
     rolls: [],
+    pinStates: [],
   }));
 
 const initialState: BowlingState = {
@@ -68,142 +92,167 @@ function createPlayer(name: string): BowlingPlayer {
   };
 }
 
+function isValidPinList(pins: number[]) {
+  return (
+    new Set(pins).size === pins.length &&
+    pins.every((pin) => ALL_PINS.includes(pin))
+  );
+}
+
+/**
+ * Gets the rack that exists at the START of the
+ * current ball.
+ */
+function getCurrentRack(frame: Frame, frameNumber: number): number[] {
+  if (frame.rolls.length === 0) return ALL_PINS;
+
+  const lastRoll = frame.rolls[frame.rolls.length - 1];
+
+  // Strike starts a completely new rack.
+  if (lastRoll === 10) return ALL_PINS;
+
+  // In frame 10, a spare gives a new rack.
+  if (
+    frameNumber === 10 &&
+    frame.rolls.length >= 2 &&
+    frame.rolls[0] + frame.rolls[1] === 10
+  ) {
+    return ALL_PINS;
+  }
+
+  return frame.pinStates[frame.pinStates.length - 1] ?? ALL_PINS;
+}
+
 function reducer(state: BowlingState, action: BowlingAction): BowlingState {
   switch (action.type) {
     case "ADD_PLAYER": {
       const name = action.name.trim();
 
-      if (!name || state.players.length >= 6) {
-        return state;
-      }
-
-      const players = [...state.players, createPlayer(name)];
+      if (!name || state.players.length >= 6) return state;
 
       return {
         ...state,
-        players,
-        turn:
-          state.players.length === 0
-            ? {
-                frame: 1,
-                player: 0,
-                ball: 1,
-              }
-            : state.turn,
+        players: [...state.players, createPlayer(name)],
       };
     }
 
     case "REMOVE_PLAYER": {
-      const removedIndex = state.players.findIndex(
-        (player) => player.id === action.id,
-      );
-
-      if (removedIndex === -1) {
-        return state;
-      }
-
       const players = state.players.filter((player) => player.id !== action.id);
 
-      if (players.length === 0) {
-        return initialState;
-      }
+      let turn = state.turn;
 
-      let player = state.turn.player;
-
-      // If a player before the current turn was removed,
-      // shift the turn back by one.
-      if (removedIndex < player) {
-        player -= 1;
-      }
-
-      // Clamp to the last available player.
-      player = Math.min(player, players.length - 1);
-      player = Math.max(player, 0);
-
-      return {
-        ...state,
-        players,
-        turn: {
-          ...state.turn,
-          player,
-        },
-      };
-    }
-
-    case "SET_PLAYERS": {
-      const players = action.players
-        .slice(0, 6)
-        .filter((player) => player.name.trim());
-
-      if (players.length === 0) {
-        return initialState;
+      if (turn.player >= players.length) {
+        turn = {
+          ...turn,
+          player: Math.max(players.length - 1, 0),
+        };
       }
 
       return {
         ...state,
         players,
-        turn: {
-          frame: Math.min(state.turn.frame, 10),
-          player: Math.min(state.turn.player, players.length - 1),
-          ball: Math.min(Math.max(state.turn.ball, 1), 3),
-        },
+        turn,
       };
     }
+
+    case "SET_PLAYERS":
+      return {
+        ...state,
+        players: action.players,
+      };
 
     case "CLEAR_PLAYERS":
       return initialState;
 
     case "RECORD_ROLL":
-      return recordRoll(state, action.pins);
+      return recordRoll(state, action.pins, action.standingPins);
 
     default:
       return state;
   }
 }
 
-function recordRoll(state: BowlingState, pins: number): BowlingState {
-  if (!Number.isInteger(pins) || pins < 0 || pins > 10) {
-    return state;
-  }
+function recordRoll(
+  state: BowlingState,
+  pins: number,
+  standingPins: number[],
+): BowlingState {
+  if (pins < 0 || pins > 10 || !Number.isInteger(pins)) return state;
+
+  if (!isValidPinList(standingPins)) return state;
 
   const { players, turn } = state;
+
   const player = players[turn.player];
 
-  if (!player) {
-    return state;
-  }
+  if (!player) return state;
 
   const frameIndex = turn.frame - 1;
+
   const frame = player.frames[frameIndex];
 
-  if (!frame) {
-    return state;
-  }
+  if (!frame) return state;
 
   const rolls = frame.rolls;
 
-  // ------------------------------------------
+  /*
+   * Determine which pins existed at the beginning
+   * of this ball.
+   */
+  const currentRack = getCurrentRack(frame, turn.frame);
+
+  /*
+   * You cannot magically bring back a pin that was
+   * already knocked down on this rack.
+   */
+  const invalidPin = standingPins.some((pin) => !currentRack.includes(pin));
+
+  if (invalidPin) return state;
+
+  /*
+   * Number of pins knocked down is based on the
+   * current rack, NOT always 10.
+   *
+   * Example:
+   *
+   * Ball 1:
+   * 10 pins -> knock down 3
+   *
+   * Ball 2:
+   * 7 pins remain -> knock down 2
+   *
+   * 7 - 5 = 2
+   */
+  const knockedDown = currentRack.length - standingPins.length;
+
+  if (knockedDown !== pins) {
+    return state;
+  }
+
+  // ==========================================
   // FRAMES 1-9
-  // ------------------------------------------
+  // ==========================================
 
   if (turn.frame < 10) {
-    // Second ball cannot make the frame exceed 10 pins.
-    if (rolls.length === 1 && rolls[0] + pins > 10) {
-      return state;
-    }
-
-    const updatedPlayers = updateFrame(players, turn, pins);
-
-    // Strike: frame immediately ends.
-    if (rolls.length === 0 && pins === 10) {
-      return {
-        players: updatedPlayers,
-        turn: getNextPlayerOrFrame(turn, players.length),
-      };
-    }
-
-    // First ball: move to ball 2.
+    /*
+     * First ball
+     */
     if (rolls.length === 0) {
+      const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+
+      /*
+       * Strike.
+       */
+      if (pins === 10) {
+        return {
+          players: updatedPlayers,
+          turn: getNextPlayerOrFrame(turn, players.length),
+        };
+      }
+
+      /*
+       * Normal first ball.
+       */
       return {
         players: updatedPlayers,
         turn: {
@@ -213,21 +262,33 @@ function recordRoll(state: BowlingState, pins: number): BowlingState {
       };
     }
 
-    // Second ball: move to next player/frame.
+    /*
+     * Second ball.
+     *
+     * The current rack already guarantees that
+     * the second ball cannot knock down more pins
+     * than remain.
+     */
+    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+
     return {
       players: updatedPlayers,
       turn: getNextPlayerOrFrame(turn, players.length),
     };
   }
 
-  // ------------------------------------------
+  // ==========================================
   // FRAME 10
-  // ------------------------------------------
+  // ==========================================
 
-  // Ball 1
+  /*
+   * Ball 1
+   */
   if (rolls.length === 0) {
+    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+
     return {
-      players: updateFrame(players, turn, pins),
+      players: updatedPlayers,
       turn: {
         ...turn,
         ball: 2,
@@ -235,22 +296,29 @@ function recordRoll(state: BowlingState, pins: number): BowlingState {
     };
   }
 
-  const first = rolls[0];
-
-  // Ball 2
+  /*
+   * Ball 2
+   */
   if (rolls.length === 1) {
-    // If ball 1 was NOT a strike, the two balls
-    // cannot total more than 10.
-    if (first < 10 && first + pins > 10) {
-      return state;
-    }
+    const first = rolls[0];
 
-    const updatedPlayers = updateFrame(players, turn, pins);
+    /*
+     * If first ball wasn't a strike, this is the
+     * same rack, so the rack validation above already
+     * prevents knocking down too many pins.
+     */
+    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
 
-    // Strike or spare gives a third ball.
-    const bonus = first === 10 || first + pins === 10;
+    /*
+     * Bonus ball if:
+     *
+     * X
+     * or
+     * spare
+     */
+    const hasBonus = first === 10 || first + pins === 10;
 
-    if (bonus) {
+    if (hasBonus) {
       return {
         players: updatedPlayers,
         turn: {
@@ -260,35 +328,40 @@ function recordRoll(state: BowlingState, pins: number): BowlingState {
       };
     }
 
-    // Open 10th frame: player is finished.
+    /*
+     * Open frame. Move on.
+     */
     return {
       players: updatedPlayers,
       turn: getNextPlayerOrFrame(turn, players.length),
     };
   }
 
-  // Ball 3
+  /*
+   * Ball 3
+   */
   if (rolls.length === 2) {
-    const second = rolls[1];
+    const [first, second] = rolls;
 
     const hasBonus = first === 10 || first + second === 10;
 
-    // A third ball is only allowed after
-    // a strike or spare.
+    /*
+     * There should not be a third ball unless
+     * there was a strike or spare.
+     */
     if (!hasBonus) {
       return state;
     }
 
-    // If the first ball was a strike, the second
-    // and third balls are treated as a new pair.
-    //
-    // If the second ball wasn't a strike, they
-    // cannot total more than 10.
-    if (first === 10 && second < 10 && second + pins > 10) {
-      return state;
-    }
-
-    const updatedPlayers = updateFrame(players, turn, pins);
+    /*
+     * For X + X the third ball gets a fresh rack.
+     *
+     * For X + something, the third ball uses the
+     * remaining pins from ball 2.
+     *
+     * The currentRack calculation handles this.
+     */
+    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
 
     return {
       players: updatedPlayers,
@@ -303,11 +376,10 @@ function updateFrame(
   players: BowlingPlayer[],
   turn: Turn,
   pins: number,
+  standingPins: number[],
 ): BowlingPlayer[] {
   return players.map((player, playerIndex) => {
-    if (playerIndex !== turn.player) {
-      return player;
-    }
+    if (playerIndex !== turn.player) return player;
 
     return {
       ...player,
@@ -319,6 +391,7 @@ function updateFrame(
         return {
           ...frame,
           rolls: [...frame.rolls, pins],
+          pinStates: [...frame.pinStates, standingPins],
         };
       }),
     };
@@ -326,29 +399,17 @@ function updateFrame(
 }
 
 function getNextPlayerOrFrame(turn: Turn, playerCount: number): Turn {
-  // More players remaining in this frame.
-  if (turn.player < playerCount - 1) {
-    return {
-      frame: turn.frame,
-      player: turn.player + 1,
-      ball: 1,
-    };
-  }
+  if (turn.player < playerCount - 1)
+    return { frame: turn.frame, player: turn.player + 1, ball: 1 };
 
-  // All players have completed this frame.
-  if (turn.frame < 10) {
-    return {
-      frame: turn.frame + 1,
-      player: 0,
-      ball: 1,
-    };
-  }
+  if (turn.frame < 10) return { frame: turn.frame + 1, player: 0, ball: 1 };
 
-  // Game finished.
   return turn;
 }
 
-export function BowlingProvider({ children }: BowlingProviderProps) {
+const BowlingContext = createContext<BowlingContextValue | null>(null);
+
+export const BowlingProvider = ({ children }: BowlingProviderProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const value: BowlingContextValue = {
@@ -378,24 +439,24 @@ export function BowlingProvider({ children }: BowlingProviderProps) {
         type: "CLEAR_PLAYERS",
       }),
 
-    recordRoll: (pins) =>
+    recordRoll: (pins, standingPins) =>
       dispatch({
         type: "RECORD_ROLL",
         pins,
+        standingPins,
       }),
   };
 
   return (
     <BowlingContext.Provider value={value}>{children}</BowlingContext.Provider>
   );
-}
+};
 
-export function useBowling(): BowlingContextValue {
+export const useBowling = () => {
   const context = useContext(BowlingContext);
 
-  if (!context) {
+  if (!context)
     throw new Error("useBowling must be used within a BowlingProvider");
-  }
 
   return context;
-}
+};
