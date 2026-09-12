@@ -3,6 +3,10 @@
 import { recordRoll } from "../games";
 import { createContext, useContext, useReducer, type ReactNode } from "react";
 
+export const ALL_PINS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+export const MAX_PLAYERS = 6;
+export const FRAME_COUNT = 10;
 
 export interface Frame {
   rolls: number[];
@@ -12,16 +16,18 @@ export interface Frame {
   // Example:
   // ball 1: [2, 3, 4, 5, 6, 7, 8]
   // ball 2: [5, 6, 7, 8]
-  //
-  // This lets Advanced mode remember exactly
-  // which pins were standing.
   pinStates: number[][];
+}
+
+export interface BowlingGame {
+  id: string;
+  frames: Frame[];
 }
 
 export interface BowlingPlayer {
   id: string;
   name: string;
-  frames: Frame[];
+  games: BowlingGame[];
 }
 
 export interface Turn {
@@ -32,6 +38,16 @@ export interface Turn {
 
 interface BowlingState {
   players: BowlingPlayer[];
+
+  /**
+   * Zero-based index of the currently active game.
+   *
+   * 0 = Game 1
+   * 1 = Game 2
+   * 2 = Game 3
+   */
+  currentGame: number;
+
   turn: Turn;
 }
 
@@ -52,6 +68,13 @@ type BowlingAction =
       players: BowlingPlayer[];
     }
   | {
+      type: "NEW_GAME";
+    }
+  | {
+      type: "SET_GAME";
+      gameIndex: number;
+    }
+  | {
       type: "RECORD_ROLL";
       pins: number;
       standingPins: number[];
@@ -62,6 +85,17 @@ interface BowlingContextValue extends BowlingState {
   removePlayer: (id: string) => void;
   setPlayers: (players: BowlingPlayer[]) => void;
   clearPlayers: () => void;
+
+  /**
+   * Creates a new game for all players.
+   */
+  newGame: () => void;
+
+  /**
+   * Switches to an existing game.
+   */
+  setGame: (gameIndex: number) => void;
+
   recordRoll: (pins: number, standingPins: number[]) => void;
 }
 
@@ -70,13 +104,25 @@ interface BowlingProviderProps {
 }
 
 const createFrames = (): Frame[] =>
-  Array.from({ length: 10 }, () => ({
+  Array.from({ length: FRAME_COUNT }, () => ({
     rolls: [],
     pinStates: [],
   }));
 
+const createGame = (): BowlingGame => ({
+  id: crypto.randomUUID(),
+  frames: createFrames(),
+});
+
+const createPlayer = (name: string): BowlingPlayer => ({
+  id: crypto.randomUUID(),
+  name: name.trim(),
+  games: [createGame()],
+});
+
 const initialState: BowlingState = {
   players: [],
+  currentGame: 0,
   turn: {
     frame: 1,
     player: 0,
@@ -84,25 +130,14 @@ const initialState: BowlingState = {
   },
 };
 
-function createPlayer(name: string): BowlingPlayer {
-  return {
-    id: crypto.randomUUID(),
-    name: name.trim(),
-    frames: createFrames(),
-  };
-}
-
-/**
- * Gets the rack that exists at the START of the
- * current ball.
- */
-
 function reducer(state: BowlingState, action: BowlingAction): BowlingState {
   switch (action.type) {
     case "ADD_PLAYER": {
       const name = action.name.trim();
 
-      if (!name || state.players.length >= 6) return state;
+      if (!name || state.players.length >= MAX_PLAYERS) {
+        return state;
+      }
 
       return {
         ...state,
@@ -138,6 +173,55 @@ function reducer(state: BowlingState, action: BowlingAction): BowlingState {
     case "CLEAR_PLAYERS":
       return initialState;
 
+    case "NEW_GAME": {
+      if (state.players.length === 0) {
+        return state;
+      }
+
+      const players = state.players.map((player) => ({
+        ...player,
+        games: [...player.games, createGame()],
+      }));
+
+      return {
+        ...state,
+        players,
+        currentGame: state.currentGame + 1,
+        turn: {
+          frame: 1,
+          player: 0,
+          ball: 1,
+        },
+      };
+    }
+
+    case "SET_GAME": {
+      if (action.gameIndex < 0) {
+        return state;
+      }
+
+      /*
+       * Every player must have this game.
+       */
+      const gameExistsForEveryPlayer = state.players.every(
+        (player) => player.games[action.gameIndex] !== undefined,
+      );
+
+      if (!gameExistsForEveryPlayer) {
+        return state;
+      }
+
+      return {
+        ...state,
+        currentGame: action.gameIndex,
+        turn: {
+          frame: 1,
+          player: 0,
+          ball: 1,
+        },
+      };
+    }
+
     case "RECORD_ROLL":
       return recordRoll(state, action.pins, action.standingPins);
 
@@ -153,6 +237,7 @@ export const BowlingProvider = ({ children }: BowlingProviderProps) => {
 
   const value: BowlingContextValue = {
     players: state.players,
+    currentGame: state.currentGame,
     turn: state.turn,
 
     addPlayer: (name) =>
@@ -178,6 +263,17 @@ export const BowlingProvider = ({ children }: BowlingProviderProps) => {
         type: "CLEAR_PLAYERS",
       }),
 
+    newGame: () =>
+      dispatch({
+        type: "NEW_GAME",
+      }),
+
+    setGame: (gameIndex) =>
+      dispatch({
+        type: "SET_GAME",
+        gameIndex,
+      }),
+
     recordRoll: (pins, standingPins) =>
       dispatch({
         type: "RECORD_ROLL",
@@ -194,8 +290,9 @@ export const BowlingProvider = ({ children }: BowlingProviderProps) => {
 export const useBowling = () => {
   const context = useContext(BowlingContext);
 
-  if (!context)
+  if (!context) {
     throw new Error("useBowling must be used within a BowlingProvider");
+  }
 
   return context;
 };

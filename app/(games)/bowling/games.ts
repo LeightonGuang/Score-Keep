@@ -1,16 +1,63 @@
-import { ALL_PINS } from "./constants";
+import { ALL_PINS, FRAME_COUNT } from "./constants";
 
-import type { BowlingPlayer, BowlingState, Frame, Turn } from "./types";
+import type {
+  BowlingGame,
+  BowlingPlayer,
+  BowlingState,
+  Frame,
+  Turn,
+} from "./types";
 
+export function createFrames(): Frame[] {
+  return Array.from({ length: FRAME_COUNT }, () => ({
+    rolls: [],
+    pinStates: [],
+  }));
+}
+
+export function createGame(): BowlingGame {
+  return {
+    id: crypto.randomUUID(),
+    frames: createFrames(),
+  };
+}
+
+export function createPlayer(name: string): BowlingPlayer {
+  return {
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    games: [createGame()],
+  };
+}
+
+export function isValidPinList(pins: number[]): boolean {
+  return (
+    new Set(pins).size === pins.length &&
+    pins.every((pin) => ALL_PINS.includes(pin))
+  );
+}
+
+/**
+ * Gets the pins standing at the START of the current ball.
+ */
 export function getCurrentRack(frame: Frame, frameNumber: number): number[] {
-  if (frame.rolls.length === 0) return ALL_PINS;
+  if (frame.rolls.length === 0) {
+    return ALL_PINS;
+  }
 
   const lastRoll = frame.rolls[frame.rolls.length - 1];
 
-  // Strike starts a completely new rack.
-  if (lastRoll === 10) return ALL_PINS;
+  /*
+   * Strike starts a fresh rack.
+   */
+  if (lastRoll === 10) {
+    return ALL_PINS;
+  }
 
-  // In frame 10, a spare gives a new rack.
+  /*
+   * Spare in frame 10 starts a fresh rack
+   * for ball 3.
+   */
   if (
     frameNumber === 10 &&
     frame.rolls.length >= 2 &&
@@ -22,63 +69,72 @@ export function getCurrentRack(frame: Frame, frameNumber: number): number[] {
   return frame.pinStates[frame.pinStates.length - 1] ?? ALL_PINS;
 }
 
-export function isValidPinList(pins: number[]) {
-  return (
-    new Set(pins).size === pins.length &&
-    pins.every((pin) => ALL_PINS.includes(pin))
-  );
-}
-
 export function recordRoll(
   state: BowlingState,
   pins: number,
   standingPins: number[],
 ): BowlingState {
-  if (pins < 0 || pins > 10 || !Number.isInteger(pins)) return state;
+  /*
+   * Basic validation.
+   */
+  if (pins < 0 || pins > 10 || !Number.isInteger(pins)) {
+    return state;
+  }
 
-  if (!isValidPinList(standingPins)) return state;
+  if (!isValidPinList(standingPins)) {
+    return state;
+  }
 
-  const { players, turn } = state;
+  const { players, turn, currentGame } = state;
 
+  /*
+   * Get current player.
+   */
   const player = players[turn.player];
 
-  if (!player) return state;
+  if (!player) {
+    return state;
+  }
 
+  /*
+   * Get current game.
+   */
+  const game = player.games[currentGame];
+
+  if (!game) {
+    return state;
+  }
+
+  /*
+   * Get current frame.
+   */
   const frameIndex = turn.frame - 1;
+  const frame = game.frames[frameIndex];
 
-  const frame = player.frames[frameIndex];
-
-  if (!frame) return state;
+  if (!frame) {
+    return state;
+  }
 
   const rolls = frame.rolls;
 
   /*
-   * Determine which pins existed at the beginning
-   * of this ball.
+   * Determine which pins were standing
+   * at the beginning of this ball.
    */
   const currentRack = getCurrentRack(frame, turn.frame);
 
   /*
-   * You cannot magically bring back a pin that was
-   * already knocked down on this rack.
+   * A pin that has already fallen cannot
+   * magically come back.
    */
   const invalidPin = standingPins.some((pin) => !currentRack.includes(pin));
 
-  if (invalidPin) return state;
+  if (invalidPin) {
+    return state;
+  }
 
   /*
-   * Number of pins knocked down is based on the
-   * current rack, NOT always 10.
-   *
-   * Example:
-   *
-   * Ball 1:
-   * 10 pins -> knock down 3
-   *
-   * Ball 2:
-   * 7 pins remain -> knock down 2
-   *
-   * 7 - 5 = 2
+   * Calculate how many pins were knocked down.
    */
   const knockedDown = currentRack.length - standingPins.length;
 
@@ -92,16 +148,23 @@ export function recordRoll(
 
   if (turn.frame < 10) {
     /*
-     * First ball
+     * First ball.
      */
     if (rolls.length === 0) {
-      const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+      const updatedPlayers = updateFrame(
+        players,
+        turn,
+        currentGame,
+        pins,
+        standingPins,
+      );
 
       /*
        * Strike.
        */
       if (pins === 10) {
         return {
+          ...state,
           players: updatedPlayers,
           turn: getNextPlayerOrFrame(turn, players.length),
         };
@@ -111,6 +174,7 @@ export function recordRoll(
        * Normal first ball.
        */
       return {
+        ...state,
         players: updatedPlayers,
         turn: {
           ...turn,
@@ -121,14 +185,17 @@ export function recordRoll(
 
     /*
      * Second ball.
-     *
-     * The current rack already guarantees that
-     * the second ball cannot knock down more pins
-     * than remain.
      */
-    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+    const updatedPlayers = updateFrame(
+      players,
+      turn,
+      currentGame,
+      pins,
+      standingPins,
+    );
 
     return {
+      ...state,
       players: updatedPlayers,
       turn: getNextPlayerOrFrame(turn, players.length),
     };
@@ -139,12 +206,19 @@ export function recordRoll(
   // ==========================================
 
   /*
-   * Ball 1
+   * Ball 1.
    */
   if (rolls.length === 0) {
-    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+    const updatedPlayers = updateFrame(
+      players,
+      turn,
+      currentGame,
+      pins,
+      standingPins,
+    );
 
     return {
+      ...state,
       players: updatedPlayers,
       turn: {
         ...turn,
@@ -154,29 +228,33 @@ export function recordRoll(
   }
 
   /*
-   * Ball 2
+   * Ball 2.
    */
   if (rolls.length === 1) {
     const first = rolls[0];
 
-    /*
-     * If first ball wasn't a strike, this is the
-     * same rack, so the rack validation above already
-     * prevents knocking down too many pins.
-     */
-    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+    const updatedPlayers = updateFrame(
+      players,
+      turn,
+      currentGame,
+      pins,
+      standingPins,
+    );
 
     /*
-     * Bonus ball if:
+     * Third ball is awarded after:
      *
      * X
+     *
      * or
+     *
      * spare
      */
     const hasBonus = first === 10 || first + pins === 10;
 
     if (hasBonus) {
       return {
+        ...state,
         players: updatedPlayers,
         turn: {
           ...turn,
@@ -186,16 +264,17 @@ export function recordRoll(
     }
 
     /*
-     * Open frame. Move on.
+     * Open tenth frame.
      */
     return {
+      ...state,
       players: updatedPlayers,
       turn: getNextPlayerOrFrame(turn, players.length),
     };
   }
 
   /*
-   * Ball 3
+   * Ball 3.
    */
   if (rolls.length === 2) {
     const [first, second] = rolls;
@@ -203,24 +282,23 @@ export function recordRoll(
     const hasBonus = first === 10 || first + second === 10;
 
     /*
-     * There should not be a third ball unless
-     * there was a strike or spare.
+     * There should not be a third ball
+     * unless there was a strike or spare.
      */
     if (!hasBonus) {
       return state;
     }
 
-    /*
-     * For X + X the third ball gets a fresh rack.
-     *
-     * For X + something, the third ball uses the
-     * remaining pins from ball 2.
-     *
-     * The currentRack calculation handles this.
-     */
-    const updatedPlayers = updateFrame(players, turn, pins, standingPins);
+    const updatedPlayers = updateFrame(
+      players,
+      turn,
+      currentGame,
+      pins,
+      standingPins,
+    );
 
     return {
+      ...state,
       players: updatedPlayers,
       turn: getNextPlayerOrFrame(turn, players.length),
     };
@@ -232,23 +310,37 @@ export function recordRoll(
 export function updateFrame(
   players: BowlingPlayer[],
   turn: Turn,
+  currentGame: number,
   pins: number,
   standingPins: number[],
 ): BowlingPlayer[] {
   return players.map((player, playerIndex) => {
-    if (playerIndex !== turn.player) return player;
+    if (playerIndex !== turn.player) {
+      return player;
+    }
 
     return {
       ...player,
-      frames: player.frames.map((frame, frameIndex) => {
-        if (frameIndex !== turn.frame - 1) {
-          return frame;
+
+      games: player.games.map((game, gameIndex) => {
+        if (gameIndex !== currentGame) {
+          return game;
         }
 
         return {
-          ...frame,
-          rolls: [...frame.rolls, pins],
-          pinStates: [...frame.pinStates, standingPins],
+          ...game,
+
+          frames: game.frames.map((frame, frameIndex) => {
+            if (frameIndex !== turn.frame - 1) {
+              return frame;
+            }
+
+            return {
+              ...frame,
+              rolls: [...frame.rolls, pins],
+              pinStates: [...frame.pinStates, standingPins],
+            };
+          }),
         };
       }),
     };
@@ -256,10 +348,30 @@ export function updateFrame(
 }
 
 export function getNextPlayerOrFrame(turn: Turn, playerCount: number): Turn {
-  if (turn.player < playerCount - 1)
-    return { frame: turn.frame, player: turn.player + 1, ball: 1 };
+  /*
+   * Next player.
+   */
+  if (turn.player < playerCount - 1) {
+    return {
+      frame: turn.frame,
+      player: turn.player + 1,
+      ball: 1,
+    };
+  }
 
-  if (turn.frame < 10) return { frame: turn.frame + 1, player: 0, ball: 1 };
+  /*
+   * Next frame.
+   */
+  if (turn.frame < FRAME_COUNT) {
+    return {
+      frame: turn.frame + 1,
+      player: 0,
+      ball: 1,
+    };
+  }
 
+  /*
+   * Game is complete.
+   */
   return turn;
 }

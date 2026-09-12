@@ -1,22 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useBowling } from "../context/BowlingContext";
 import AdvancePinControl from "./AdvancePinControl";
+import { useBowling } from "../context/BowlingContext";
 
 const ALL_PINS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const BowlingScoreControls = () => {
-  const { players, turn, recordRoll } = useBowling();
+  const { players, turn, currentGame, recordRoll, newGame } = useBowling();
 
   const [mode, setMode] = useState<"basic" | "advanced">("basic");
 
-  if (players.length === 0) return null;
+  if (players.length === 0) {
+    return null;
+  }
 
   const currentPlayer = players[turn.player];
-  const currentFrame = currentPlayer?.frames[turn.frame - 1];
+
+  const game = currentPlayer?.games[currentGame];
+
+  const currentFrame = game?.frames[turn.frame - 1];
 
   const rolls = currentFrame?.rolls ?? [];
+
   const pinStates = currentFrame?.pinStates ?? [];
 
   const getCurrentRack = (): number[] => {
@@ -38,11 +44,15 @@ const BowlingScoreControls = () => {
   };
 
   const currentRack = getCurrentRack();
+
   const maxPins = currentRack.length;
+
   const canRoll = maxPins > 0;
 
   const handleRoll = (pins: number) => {
-    if (!canRoll || pins < 0 || pins > maxPins) return;
+    if (!canRoll || pins < 0 || pins > maxPins) {
+      return;
+    }
 
     const standingPins = currentRack.slice(0, maxPins - pins);
 
@@ -50,7 +60,9 @@ const BowlingScoreControls = () => {
   };
 
   useEffect(() => {
-    if (mode !== "basic") return;
+    if (mode !== "basic") {
+      return;
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -76,11 +88,15 @@ const BowlingScoreControls = () => {
       if (event.key === "/") {
         event.preventDefault();
 
-        if (rolls.length === 0) return;
+        if (rolls.length === 0) {
+          return;
+        }
 
         const lastRoll = rolls[rolls.length - 1];
 
-        if (lastRoll === 10) return;
+        if (lastRoll === 10) {
+          return;
+        }
 
         handleRoll(maxPins);
 
@@ -89,6 +105,7 @@ const BowlingScoreControls = () => {
 
       if (/^[0-9]$/.test(event.key)) {
         event.preventDefault();
+
         handleRoll(Number(event.key));
       }
     };
@@ -98,10 +115,33 @@ const BowlingScoreControls = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mode, turn, rolls, pinStates, currentRack, maxPins]);
+  }, [mode, turn, rolls, pinStates, maxPins]);
 
   return (
     <div className="border-border bg-surface w-full max-w-sm rounded-2xl border p-4 shadow-sm">
+      {/* Game controls */}
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-foreground text-sm font-semibold">
+            Game {currentGame + 1}
+          </p>
+
+          <p className="text-muted text-xs">
+            Player {turn.player + 1}
+            {" · "}
+            Frame {turn.frame}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={newGame}
+          className="bg-accent hover:bg-accent-hover rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors"
+        >
+          Next Game
+        </button>
+      </div>
+
       {/* Header */}
       <div className="mb-4">
         <p className="text-foreground text-sm font-semibold">Record roll</p>
@@ -111,7 +151,7 @@ const BowlingScoreControls = () => {
         </p>
       </div>
 
-      {/* Mode switcher */}
+      {/* Mode */}
       <div className="border-border bg-surface-muted mb-4 flex rounded-xl border p-1">
         <button
           type="button"
@@ -138,7 +178,7 @@ const BowlingScoreControls = () => {
         </button>
       </div>
 
-      {/* Controls */}
+      {/* Roll controls */}
       {mode === "basic" ? (
         <div className="grid grid-cols-3 gap-2">
           {Array.from({ length: 11 }, (_, pins) => {
@@ -153,18 +193,30 @@ const BowlingScoreControls = () => {
                 type="button"
                 disabled={disabled}
                 onClick={() => handleRoll(pins)}
-                className={`border-border bg-surface text-foreground hover:border-accent hover:bg-accent active:bg-accent-hover disabled:border-border-muted disabled:bg-surface-muted disabled:text-muted-light disabled:hover:border-border-muted disabled:hover:bg-surface-muted disabled:hover:text-muted-light flex aspect-square w-full items-center justify-center rounded-xl border text-lg font-semibold shadow-sm transition-all duration-150 hover:text-white hover:shadow-sm active:scale-95 active:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none`}
+                className="border-border bg-surface text-foreground hover:border-accent hover:bg-accent disabled:bg-surface-muted disabled:text-muted-light aspect-square w-full rounded-xl border text-lg font-semibold transition-all hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isStrike ? "X" : pins}
               </button>
             );
           })}
+
+          {/* Spare */}
+          <button
+            type="button"
+            disabled={
+              !canRoll || rolls.length === 0 || rolls[rolls.length - 1] === 10
+            }
+            onClick={() => handleRoll(maxPins)}
+            className="border-accent text-accent hover:bg-accent disabled:border-border-muted disabled:bg-surface-muted disabled:text-muted-light aspect-square w-full rounded-xl border text-lg font-semibold transition-all hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            /
+          </button>
         </div>
       ) : (
         <AdvancePinControl />
       )}
 
-      {/* Turn information */}
+      {/* Turn */}
       <div className="border-border-muted bg-surface-muted mt-4 flex items-center justify-between rounded-xl border px-4 py-3">
         <div>
           <p className="text-muted text-xs">Current turn</p>

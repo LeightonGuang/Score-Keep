@@ -1,6 +1,6 @@
 import { twMerge } from "tailwind-merge";
 
-import type { Frame, Turn } from "../context/BowlingContext";
+import type { Frame, Turn } from "../types";
 
 interface TenthFrameProps {
   frame: Frame;
@@ -18,9 +18,10 @@ export const TenthFrame = ({
   const [first, second, third] = frame.rolls;
 
   const isCurrentPlayer = turn.player === playerIndex;
+
   const isCurrentFrame = turn.frame === 10;
 
-  const displayRoll = (
+  const getRollDisplay = (
     roll: number | undefined,
     ball: 1 | 2 | 3,
   ): string | number => {
@@ -28,41 +29,45 @@ export const TenthFrame = ({
       return "";
     }
 
-    // First ball
+    /*
+     * Ball 1
+     */
     if (ball === 1) {
       return roll === 10 ? "X" : roll;
     }
 
-    // Second ball
+    /*
+     * Ball 2
+     *
+     * A spare is only possible if ball 1
+     * wasn't a strike.
+     */
     if (ball === 2) {
-      const isSpare = first !== undefined && first < 10 && first + roll === 10;
-
-      if (isSpare) {
+      if (first !== undefined && first < 10 && first + roll === 10) {
         return "/";
       }
 
       return roll === 10 ? "X" : roll;
     }
 
-    // Third ball
-    const isSpare = second !== undefined && second < 10 && second + roll === 10;
-
-    if (roll === 10) {
-      return "X";
-    }
-
-    if (isSpare) {
+    /*
+     * Ball 3
+     *
+     * A spare here is calculated against
+     * ball 2 when ball 2 wasn't a strike.
+     */
+    if (second !== undefined && second < 10 && second + roll === 10) {
       return "/";
     }
 
-    return roll;
+    return roll === 10 ? "X" : roll;
   };
 
   return (
     <div className="border-border bg-surface size-16 overflow-hidden border">
       {/* Rolls */}
       <div className="flex h-8">
-        {[first, second, third].map((roll, index) => {
+        {([first, second, third] as const).map((roll, index) => {
           const ball = (index + 1) as 1 | 2 | 3;
 
           const isActive =
@@ -72,12 +77,12 @@ export const TenthFrame = ({
             <div
               key={ball}
               className={twMerge(
-                "flex w-1/3 items-center justify-center text-sm",
+                "text-foreground flex w-1/3 items-center justify-center text-sm font-medium",
                 ball !== 3 && "border-border border-r",
                 isActive && "bg-accent text-white",
               )}
             >
-              {displayRoll(roll, ball)}
+              {getRollDisplay(roll, ball)}
             </div>
           );
         })}

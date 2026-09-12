@@ -26,7 +26,7 @@ const Pin = ({ pin, standing, available, onClick }: PinProps) => (
           : "border-border bg-surface-muted text-muted-light hover:border-accent hover:text-foreground"
     }`}
   >
-    <span className="absolute top-1 h-1.5 w-5 rounded-full bg-red-500" />
+    <span className="bg-accent absolute top-1 h-1.5 w-5 rounded-full" />
 
     <span className="mt-2 text-sm font-bold">{pin}</span>
   </button>
@@ -37,60 +37,86 @@ const getCurrentRack = (
   pinStates: number[][],
   frameNumber: number,
 ) => {
+  /*
+   * First ball starts with all pins.
+   */
   if (rolls.length === 0) {
     return ALL_PINS;
   }
 
   const lastRoll = rolls[rolls.length - 1];
 
-  // Strike starts a completely new rack.
+  /*
+   * Strike starts a new rack.
+   */
   if (lastRoll === 10) {
     return ALL_PINS;
   }
 
-  // Spare in the tenth frame starts a new rack.
+  /*
+   * A spare in frame 10 starts a new rack
+   * for ball 3.
+   */
   if (frameNumber === 10 && rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
     return ALL_PINS;
   }
 
-  // Otherwise use the pins left standing from the previous roll.
+  /*
+   * Otherwise use the pins left standing after
+   * the previous ball.
+   */
   return pinStates[pinStates.length - 1] ?? ALL_PINS;
 };
 
 const AdvancePinControl = () => {
-  const { players, turn, recordRoll } = useBowling();
+  const { players, turn, currentGame, recordRoll } = useBowling();
 
   const player = players[turn.player];
-  const frame = player?.frames[turn.frame - 1];
+
+  /*
+   * Player
+   *   -> current game
+   *      -> current frame
+   */
+  const game = player?.games[currentGame];
+
+  const frame = game?.frames[turn.frame - 1];
 
   const rolls = frame?.rolls ?? [];
   const pinStates = frame?.pinStates ?? [];
 
   const currentRack = getCurrentRack(rolls, pinStates, turn.frame);
 
+  /*
+   * Pins Up:
+   *
+   * selectedPins = pins that are standing.
+   *
+   * Pins Down:
+   *
+   * selectedPins = pins that have been knocked down.
+   */
   const [mode, setMode] = useState<PinMode>("up");
-  const [selectedPins, setSelectedPins] = useState<number[]>([]);
 
-  if (!player || !frame) {
+  const [selectedPins, setSelectedPins] = useState<number[]>(ALL_PINS);
+
+  if (!player || !game || !frame) {
     return null;
   }
 
   /*
-   * Pins Up:
+   * Only pins in the current rack can be
+   * selected.
    *
-   * Nothing is selected by default.
-   * Clicking a pin means:
-   * "this pin is still standing".
+   * Pins Up:
+   *   selected = standing
    *
    * Pins Down:
-   *
-   * Nothing is selected by default.
-   * Clicking a pin means:
-   * "this pin has been knocked down".
+   *   selected = knocked down
    */
   const standingPins =
     mode === "up"
-      ? selectedPins
+      ? selectedPins.filter((pin) => currentRack.includes(pin))
       : currentRack.filter((pin) => !selectedPins.includes(pin));
 
   const pinsDown = currentRack.length - standingPins.length;
@@ -108,6 +134,19 @@ const AdvancePinControl = () => {
   };
 
   const resetPins = () => {
+    /*
+     * In Pins Up mode, reset means:
+     * all available pins are standing.
+     */
+    if (mode === "up") {
+      setSelectedPins([...currentRack]);
+      return;
+    }
+
+    /*
+     * In Pins Down mode, reset means:
+     * no pins are knocked down.
+     */
     setSelectedPins([]);
   };
 
@@ -117,22 +156,35 @@ const AdvancePinControl = () => {
     }
 
     setMode(nextMode);
-    setSelectedPins([]);
+
+    /*
+     * Make the initial state intuitive for
+     * whichever mode we're entering.
+     */
+    if (nextMode === "up") {
+      setSelectedPins([...currentRack]);
+    } else {
+      setSelectedPins([]);
+    }
   };
 
   const confirmRoll = () => {
-    if (mode === "up") {
-      recordRoll(pinsDown, standingPins);
-      return;
-    }
-
     recordRoll(pinsDown, standingPins);
+
+    /*
+     * Don't manually reset here.
+     *
+     * The current frame/game will change after
+     * recordRoll(), and the component will render
+     * from the new state.
+     */
   };
 
   const rows = [[7, 8, 9, 10], [4, 5, 6], [2, 3], [1]];
 
   return (
     <div className="w-full">
+      {/* Mode switcher */}
       <div className="border-border bg-surface-muted mb-4 flex overflow-hidden rounded-lg border p-1">
         <button
           type="button"
@@ -159,6 +211,7 @@ const AdvancePinControl = () => {
         </button>
       </div>
 
+      {/* Pins */}
       <div className="mb-5 flex flex-col items-center gap-2">
         {rows.map((row) => (
           <div key={row.join("-")} className="flex gap-2">
@@ -175,6 +228,7 @@ const AdvancePinControl = () => {
         ))}
       </div>
 
+      {/* Roll summary */}
       <div className="bg-surface-muted mb-4 rounded-lg px-4 py-3 text-center">
         <div className="text-foreground text-sm font-semibold">
           {pinsDown} knocked down
@@ -185,6 +239,7 @@ const AdvancePinControl = () => {
         </div>
       </div>
 
+      {/* Confirm */}
       <button
         type="button"
         onClick={confirmRoll}
@@ -193,6 +248,7 @@ const AdvancePinControl = () => {
         Confirm Roll
       </button>
 
+      {/* Reset */}
       <button
         type="button"
         onClick={resetPins}
