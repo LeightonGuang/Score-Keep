@@ -22,41 +22,34 @@ const BowlingPlayerForm = ({ onSubmit }: BowlingPlayerFormProps) => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // If there is a name currently in the input,
-    // add it before starting the game.
     if (name.trim() && players.length < 6) {
       addPlayer(name);
       setName("");
     }
 
-    // Start if there is already a player,
-    // or if the current input contains a name.
-    if (players.length > 0 || name.trim()) {
-      onSubmit?.();
-    }
+    if (players.length > 0 || name.trim()) onSubmit?.();
   };
 
   const canStartGame = players.length > 0 || name.trim().length > 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Players */}
       {players.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {players.map((player, index) => (
-            <div key={player.id} className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-sm font-bold text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            <div key={player.id} className="group flex items-center gap-3">
+              <div className="bg-surface-muted text-muted flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold">
                 {index + 1}
               </div>
 
-              <div className="flex h-10 flex-1 items-center rounded-lg border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="border-border bg-surface-muted flex h-10 flex-1 items-center rounded-lg border px-3 text-sm font-medium">
                 {player.name}
               </div>
 
               <button
                 type="button"
                 onClick={() => removePlayer(player.id)}
-                className="h-10 w-10 rounded-lg text-xl text-zinc-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
+                className="text-muted-light flex size-10 items-center justify-center rounded-lg text-lg transition hover:bg-red-50 hover:text-red-500"
                 aria-label={`Remove ${player.name}`}
               >
                 ×
@@ -66,11 +59,10 @@ const BowlingPlayerForm = ({ onSubmit }: BowlingPlayerFormProps) => {
         </div>
       )}
 
-      {/* Add player */}
       {players.length < 6 && (
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <input
-            className="h-10 flex-1 rounded-lg border border-zinc-200 bg-white px-3 text-sm transition outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/10 dark:border-zinc-800 dark:bg-zinc-900"
+            className="border-border bg-surface-muted text-foreground placeholder:text-muted-light focus:border-accent focus:ring-accent/10 h-10 min-w-0 flex-1 rounded-lg border px-3 text-sm transition outline-none focus:ring-2"
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -79,24 +71,25 @@ const BowlingPlayerForm = ({ onSubmit }: BowlingPlayerFormProps) => {
           />
 
           <button
-            className="rounded-lg bg-zinc-900 px-4 text-sm font-bold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
             type="button"
             onClick={handleAddPlayer}
             disabled={!name.trim()}
+            className="bg-foreground h-10 rounded-lg px-4 text-sm font-semibold text-white transition hover:bg-[#28334a] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Add
           </button>
         </div>
       )}
 
-      {/* Start */}
-      <button
-        className="w-full rounded-lg bg-zinc-950 py-3 text-sm font-bold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-        type="submit"
-        disabled={!canStartGame}
-      >
-        Start Game
-      </button>
+      <div className="border-border border-t pt-5">
+        <button
+          type="submit"
+          disabled={!canStartGame}
+          className="bg-accent hover:bg-accent-hover h-11 w-full rounded-lg px-4 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Start Game
+        </button>
+      </div>
     </form>
   );
 };
