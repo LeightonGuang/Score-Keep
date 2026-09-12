@@ -11,8 +11,7 @@ interface FrameProps {
 }
 
 export const Frame = ({ i, frame, turn, score, playerIndex }: FrameProps) => {
-  const firstRoll = frame.rolls[0];
-  const secondRoll = frame.rolls[1];
+  const [firstRoll, secondRoll] = frame.rolls;
 
   const isSpare =
     firstRoll !== undefined &&
@@ -21,17 +20,22 @@ export const Frame = ({ i, frame, turn, score, playerIndex }: FrameProps) => {
     firstRoll + secondRoll === 10;
 
   const isCurrentPlayer = turn.player === playerIndex;
+  const isCurrentFrame = turn.frame === i;
+
+  const isFirstBallActive =
+    isCurrentPlayer && isCurrentFrame && turn.ball === 1;
+
+  const isSecondBallActive =
+    isCurrentPlayer && isCurrentFrame && turn.ball === 2;
 
   return (
-    <div className="size-16 border">
-      <div className="flex h-8 w-full">
+    <div className="border-border bg-surface size-16 overflow-hidden border">
+      {/* Rolls */}
+      <div className="flex h-8">
         <div
           className={twMerge(
-            "w-1/2 border text-center",
-            isCurrentPlayer &&
-              turn.frame === i &&
-              turn.ball === 1 &&
-              "bg-red-500",
+            "border-border flex w-1/2 items-center justify-center border-r text-sm",
+            isFirstBallActive && "bg-accent text-white",
           )}
         >
           {firstRoll === 10 ? "X" : (firstRoll ?? "")}
@@ -39,18 +43,16 @@ export const Frame = ({ i, frame, turn, score, playerIndex }: FrameProps) => {
 
         <div
           className={twMerge(
-            "w-1/2 border text-center",
-            isCurrentPlayer &&
-              turn.frame === i &&
-              turn.ball === 2 &&
-              "bg-red-500",
+            "flex w-1/2 items-center justify-center text-sm",
+            isSecondBallActive && "bg-accent text-white",
           )}
         >
           {isSpare ? "/" : secondRoll === 10 ? "X" : (secondRoll ?? "")}
         </div>
       </div>
 
-      <div className="flex h-8 items-center justify-center font-semibold">
+      {/* Score */}
+      <div className="border-border text-foreground flex h-8 items-center justify-center border-t text-sm font-semibold">
         {score ?? ""}
       </div>
     </div>
