@@ -37,34 +37,20 @@ const getCurrentRack = (
   pinStates: number[][],
   frameNumber: number,
 ) => {
-  /*
-   * First ball starts with all pins.
-   */
   if (rolls.length === 0) {
     return ALL_PINS;
   }
 
   const lastRoll = rolls[rolls.length - 1];
 
-  /*
-   * Strike starts a new rack.
-   */
   if (lastRoll === 10) {
     return ALL_PINS;
   }
 
-  /*
-   * A spare in frame 10 starts a new rack
-   * for ball 3.
-   */
   if (frameNumber === 10 && rolls.length >= 2 && rolls[0] + rolls[1] === 10) {
     return ALL_PINS;
   }
 
-  /*
-   * Otherwise use the pins left standing after
-   * the previous ball.
-   */
   return pinStates[pinStates.length - 1] ?? ALL_PINS;
 };
 
@@ -72,14 +58,7 @@ const AdvancePinControl = () => {
   const { players, turn, currentGame, recordRoll } = useBowling();
 
   const player = players[turn.player];
-
-  /*
-   * Player
-   *   -> current game
-   *      -> current frame
-   */
   const game = player?.games[currentGame];
-
   const frame = game?.frames[turn.frame - 1];
 
   const rolls = frame?.rolls ?? [];
@@ -87,32 +66,34 @@ const AdvancePinControl = () => {
 
   const currentRack = getCurrentRack(rolls, pinStates, turn.frame);
 
-  /*
-   * Pins Up:
-   *
-   * selectedPins = pins that are standing.
-   *
-   * Pins Down:
-   *
-   * selectedPins = pins that have been knocked down.
-   */
   const [mode, setMode] = useState<PinMode>("up");
 
-  const [selectedPins, setSelectedPins] = useState<number[]>(ALL_PINS);
+  /*
+   * IMPORTANT:
+   *
+   * Pins Up mode:
+   *   selectedPins = pins currently standing.
+   *
+   * Start with [] so no pins are selected.
+   *
+   * Pins Down mode:
+   *   selectedPins = pins knocked down.
+   *
+   * Also starts with [] because no pins have
+   * been knocked down yet.
+   */
+  const [selectedPins, setSelectedPins] = useState<number[]>([]);
 
   if (!player || !game || !frame) {
     return null;
   }
 
   /*
-   * Only pins in the current rack can be
-   * selected.
+   * In Pins Up mode, selected pins are standing.
    *
-   * Pins Up:
-   *   selected = standing
-   *
-   * Pins Down:
-   *   selected = knocked down
+   * In Pins Down mode, selected pins are knocked down,
+   * so standing pins are everything in the rack that
+   * isn't selected.
    */
   const standingPins =
     mode === "up"
@@ -135,16 +116,16 @@ const AdvancePinControl = () => {
 
   const resetPins = () => {
     /*
-     * In Pins Up mode, reset means:
-     * all available pins are standing.
+     * In Pins Up mode:
+     * no pins are selected.
      */
     if (mode === "up") {
-      setSelectedPins([...currentRack]);
+      setSelectedPins([]);
       return;
     }
 
     /*
-     * In Pins Down mode, reset means:
+     * In Pins Down mode:
      * no pins are knocked down.
      */
     setSelectedPins([]);
@@ -158,26 +139,23 @@ const AdvancePinControl = () => {
     setMode(nextMode);
 
     /*
-     * Make the initial state intuitive for
-     * whichever mode we're entering.
+     * When switching to Pins Up:
+     * start with nothing selected.
      */
     if (nextMode === "up") {
-      setSelectedPins([...currentRack]);
-    } else {
       setSelectedPins([]);
+      return;
     }
+
+    /*
+     * When switching to Pins Down:
+     * start with nothing knocked down.
+     */
+    setSelectedPins([]);
   };
 
   const confirmRoll = () => {
     recordRoll(pinsDown, standingPins);
-
-    /*
-     * Don't manually reset here.
-     *
-     * The current frame/game will change after
-     * recordRoll(), and the component will render
-     * from the new state.
-     */
   };
 
   const rows = [[7, 8, 9, 10], [4, 5, 6], [2, 3], [1]];
