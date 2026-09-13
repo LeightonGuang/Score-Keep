@@ -1,4 +1,4 @@
-import type { Frame } from "../context/BowlingContext";
+import { Frame } from "../types";
 
 export function calculateFrameScores(frames: Frame[]): (number | null)[] {
   const scores: (number | null)[] = [];
